@@ -6,7 +6,6 @@
     <title>Happy Birthday Khona</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Base Setup --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background-color: #000;
@@ -14,12 +13,12 @@
             font-family: 'Poppins', sans-serif;
             height: 100vh;
             width: 100vw;
-            touch-action: none; /* Prevents scrolling while casting magic */
+            touch-action: none; /* Important for mobile */
         }
 
-        /* --- 2. Orientation Warning Overlay --- */
+        /* --- Orientation Warning (Portrait) --- */
         #rotate-warning {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
@@ -31,101 +30,104 @@
             text-align: center;
         }
         #rotate-warning svg {
-            width: 100px; height: 100px; fill: #ff4081;
+            width: 80px; fill: #ff4081; margin-bottom: 20px;
             animation: rotatePhone 2s infinite ease-in-out;
         }
-        /* Show warning only on landscape */
-        @media screen and (orientation: landscape) {
-            #rotate-warning { display: flex; }
-        }
 
-        /* --- 3. Background Rain Canvas --- */
-        #rain-canvas {
-            position: fixed; top: 0; left: 0; z-index: 1;
-            opacity: 0.5;
-        }
-
-        /* --- 4. Main Container & States --- */
+        /* --- Main Content (Landscape) --- */
         #main-container {
+            display: none;
             position: relative; z-index: 10;
             height: 100%; width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        }
+        #rain-canvas {
+            display: none; position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.3;
         }
 
-        /* State A: Initial Gift Box */
-        #gift-state {
+        /* Landscape Logic */
+        @media screen and (orientation: landscape) {
+            #rotate-warning { display: none; }
+            #main-container { display: block; }
+            #rain-canvas { display: block; }
+        }
+
+        /* --- States --- */
+        /* 1. Gift Box */
+        #gift-container {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
             cursor: pointer;
-            animation: float 2s ease-in-out infinite;
+            z-index: 20;
         }
-        .gift-emoji { font-size: 100px; filter: drop-shadow(0 0 20px #ff4081); }
-        .hint-text { color: #fff; margin-top: 20px; letter-spacing: 2px; animation: pulse 1.5s infinite; }
+        .gift-emoji {
+            font-size: 90px;
+            animation: bounce 2s infinite;
+            filter: drop-shadow(0 0 15px #ff4081);
+        }
+        .tap-hint {
+            color: white; font-size: 1.2rem; margin-top: 10px;
+            animation: blink 1s infinite;
+        }
 
-        /* State B: Wand Interaction Area */
-        #wand-state {
-            display: none; /* Hidden initially */
+        /* 2. Magic Wand Area */
+        #magic-area {
+            display: none;
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            /* Hide default cursor, we use custom wand */
-            cursor: none; 
+            z-index: 30;
         }
-        /* The custom wand follower */
-        #wand-follower {
+        #wand {
             position: absolute;
-            font-size: 40px;
+            font-size: 50px;
             pointer-events: none;
-            z-index: 100;
-            transform: translate(-50%, -50%) rotate(-15deg);
+            z-index: 40;
+            transform: rotate(-10deg);
             filter: drop-shadow(0 0 10px #d500f9);
-            display: none;
+            display: none; 
         }
-        /* Magic particles */
-        .magic-particle {
-            position: absolute;
-            pointer-events: none;
-            font-size: 20px;
-            animation: particleFade 1s forwards ease-out;
+        .instruction {
+            position: absolute; bottom: 20px; width: 100%;
+            text-align: center; color: rgba(255,255,255,0.7);
+            font-size: 1rem; pointer-events: none;
+        }
+
+        /* 3. Final Reveal */
+        #final-message {
+            display: none;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 80%;
             z-index: 50;
         }
-
-        /* State C: Final Reveal */
-        #reveal-state {
-            display: none; /* Hidden initially */
-            text-align: center;
-            color: #fff;
-            z-index: 200;
-            animation: zoomIn 1s ease-out;
-            padding: 20px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 20px;
-            backdrop-filter: blur(5px);
-        }
-        #reveal-state h1 {
+        h1 {
             font-family: 'Dancing Script', cursive;
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: #ff4081;
-            text-shadow: 0 0 15px #d500f9;
-            line-height: 1.2;
+            text-shadow: 0 0 20px #d500f9;
+            margin-bottom: 15px;
+            animation: zoomIn 1s ease-out;
         }
-        .cat-gif {
-            width: 200px;
-            border-radius: 15px;
-            margin: 20px 0;
-            box-shadow: 0 0 30px rgba(255, 64, 129, 0.5);
+        .cat-img {
+            width: 180px; border-radius: 15px;
+            box-shadow: 0 0 25px rgba(255,64,129,0.6);
+            animation: fadeIn 2s;
         }
 
-        /* --- Animations --- */
-        @keyframes rotatePhone { 0%, 100% { transform: rotate(-90deg); } 50% { transform: rotate(0deg); } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        @keyframes particleFade { 
-            0% { opacity: 1; transform: scale(1) translate(0,0); } 
-            100% { opacity: 0; transform: scale(0) translate(var(--tx), var(--ty)); } 
+        /* Effects */
+        .particle {
+            position: absolute; font-size: 20px; pointer-events: none;
+            animation: fadeUp 1s forwards;
         }
-        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes zoomIn { from { transform: scale(0); } to { transform: scale(1); } }
+        @keyframes fadeUp { to { opacity: 0; transform: translateY(-30px) scale(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
     </style>
 </head>
 <body>
@@ -136,89 +138,125 @@
 
     <div id="rotate-warning">
         <svg viewBox="0 0 24 24"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.24-1.12l1.33 1.32-.66-.03C4.84 2.52 0 7.36 0 13.5c0 1.08.15 2.13.42 3.14L1.75 16c-.33-.83-.5-1.71-.5-2.5 0-4.77 3.87-8.63 8.63-8.63l-.64.03 3.8 3.8 1.31-1.32-6.11-6zM.42 7.36L1.75 8c.33.83.5 1.71.5 2.5 0 4.77 3.87 8.63 8.63 8.63l.64-.03-3.8-3.8-1.31 1.32 6.11 6 6.11-6-1.33-1.32.66.03c6.07.08 10.91-4.76 10.91-10.9 0-1.08-.15-2.13-.42-3.14L22.25 8c.33.83.5 1.71.5 2.5 0 4.77-3.87 8.63-8.63 8.63l.64-.03-3.8-3.8-1.31 1.32 6.11 6z"/></svg>
-        <h2>Please Rotate Your Phone</h2>
-        <p>This experience is best viewed in portrait mode.</p>
+        <h2>Rotate Phone</h2>
     </div>
 
     <canvas id="rain-canvas"></canvas>
 
     <div id="main-container">
-        
-        <div id="gift-state" onclick="startMagic()">
+        <div id="gift-container">
             <div class="gift-emoji">🎁</div>
-            <div class="hint-text">Tap to start magic</div>
+            <div class="tap-hint">Tap to Open</div>
         </div>
 
-        <div id="wand-state">
-            <div id="wand-follower">🪄</div>
-            <h3 style="color:white; text-align:center; margin-top:50px; opacity:0.7;">Move wand to cast spell ✨</h3>
+        <div id="magic-area">
+            <div id="wand">🪄</div>
+            <div class="instruction">Rub screen or Tap anywhere! ✨</div>
         </div>
 
-        <div id="reveal-state">
+        <div id="final-message">
             <h1>Happy Birthday to you<br>Khona 🥰</h1>
-            <img src="https://media.giphy.com/media/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-gif">
-            <p>Wishing you a magical day!</p>
+            <img src="https://media.giphy.com/media/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-img">
         </div>
     </div>
 
-
     <script>
-        // --- 1. Matrix Rain (Background) ---
+        // --- Setup Canvas ---
         const canvas = document.getElementById('rain-canvas');
         const ctx = canvas.getContext('2d');
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        const rainChars = "KHONA❤️✨BDAY🎂🎉";
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = "HAPPY BIRTHDAY KHONA ❤️";
+        const drops = Array(Math.floor(canvas.width/20)).fill(1);
 
         function drawRain() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = fontSize + 'px arial';
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#ff4081';
+            ctx.font = '15px arial';
             for(let i=0; i<drops.length; i++) {
-                const text = rainChars[Math.floor(Math.random() * rainChars.length)];
-                ctx.fillStyle = Math.random() > 0.9 ? '#fff' : '#ff4081';
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*20, drops[i]*20);
+                if(drops[i]*20 > canvas.height && Math.random()>0.95) drops[i]=0;
                 drops[i]++;
             }
         }
-        setInterval(drawRain, 40);
+        setInterval(drawRain, 50);
 
-
-        // --- 2. Main Interaction Logic ---
-        const giftState = document.getElementById('gift-state');
-        const wandState = document.getElementById('wand-state');
-        const revealState = document.getElementById('reveal-state');
-        const wandFollower = document.getElementById('wand-follower');
+        // --- Logic ---
+        const giftBtn = document.getElementById('gift-container');
+        const magicArea = document.getElementById('magic-area');
+        const wand = document.getElementById('wand');
+        const finalMsg = document.getElementById('final-message');
         const audio = document.getElementById('bg-music');
+        
+        let progress = 0;
+        let revealed = false;
 
-        let magicProgress = 0;
-        const MAGIC_THRESHOLD = 80; // How much "spell casting" needed
-        let isRevealed = false;
-
-        // Transition from Gift to Wand mode
-        function startMagic() {
-            giftState.style.display = 'none';
-            wandState.style.display = 'block';
-            wandFollower.style.display = 'block';
-            // Play audio
-            audio.play().catch(e => console.log("Audio interacted needed"));
-
-            // Attach move listeners
-            document.addEventListener('mousemove', handleMove);
-            document.addEventListener('touchmove', handleMove, { passive: false });
+        // Start Function
+        function startExperience() {
+            giftBtn.style.display = 'none';
+            magicArea.style.display = 'block';
+            wand.style.display = 'block';
+            audio.play().catch(e=>console.log("Audio autoplay blocked"));
         }
 
-        // Handle dragging/moving the wand
-        function handleMove(e) {
-            if(isRevealed) return;
+        // Add both Click and Touch event listeners to be safe
+        giftBtn.addEventListener('click', startExperience);
+        giftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent double firing
+            startExperience();
+        });
 
-            e.preventDefault(); // Stop screen
+        // Magic Effect Logic
+        function doMagic(x, y) {
+            if(revealed) return;
+
+            // Move Wand
+            wand.style.left = x + 'px';
+            wand.style.top = y + 'px';
+
+            // Create Particle
+            const p = document.createElement('div');
+            p.innerText = Math.random()>0.5 ? '✨' : '💖';
+            p.className = 'particle';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            p.style.color = `hsl(${Math.random()*360}, 100%, 70%)`;
+            magicArea.appendChild(p);
+            setTimeout(() => p.remove(), 1000);
+
+            // Progress
+            progress += 2; // Faster progress
+            if(progress > 100) revealSurprise();
+        }
+
+        // Handle Mouse Move
+        document.addEventListener('mousemove', (e) => {
+            if(magicArea.style.display === 'block') doMagic(e.clientX, e.clientY);
+        });
+
+        // Handle Touch Move (Rubbing)
+        document.addEventListener('touchmove', (e) => {
+            if(magicArea.style.display === 'block') {
+                doMagic(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, {passive: true});
+
+        // Handle Click/Tap (Alternative to rubbing)
+        document.addEventListener('click', (e) => {
+            if(magicArea.style.display === 'block') {
+                doMagic(e.clientX, e.clientY);
+                progress += 5; // Tapping gives more progress
+            }
+        });
+
+        function revealSurprise() {
+            if(revealed) return;
+            revealed = true;
+            magicArea.style.display = 'none';
+            finalMsg.style.display = 'block';
+        }
+
+    </script>
+</body>
+</html>
