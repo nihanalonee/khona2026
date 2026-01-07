@@ -6,7 +6,7 @@
     <title>Happy Birthday Khona</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&family=Quicksand:wght@500&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. RESET & BASIC --- */
+        /* --- RESET & BASIC --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #000;
@@ -20,139 +20,107 @@
             color: #fff;
         }
 
-        /* --- 2. MATRIX RAIN CANVAS --- */
-        canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-        }
-
-        /* --- 3. COUNTDOWN & TEXT OVERLAY --- */
+        /* --- LAYERS --- */
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10;
             display: flex; justify-content: center; align-items: center;
             flex-direction: column;
-            pointer-events: none; /* Let clicks pass through if needed */
-        }
-        .matrix-text {
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            color: #0f0; /* Matrix Green initially */
-            font-size: 5rem;
-            text-shadow: 0 0 20px #0f0;
-            animation: glitch 1s infinite;
-        }
-        /* Pink Neon for Birthday Text */
-        .neon-text {
-            color: #ff4081;
-            text-shadow: 0 0 20px #ff4081, 0 0 40px #ff4081;
-            font-family: 'Dancing Script', cursive;
-            text-align: center;
-            display: none; /* Hidden initially */
-        }
-
-        /* --- 4. INTERACTIVE STAGE (Cat & Hand) --- */
-        #interaction-layer {
-            display: none; /* Hidden initially */
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20;
-            background: rgba(0,0,0,0.8); /* Fade background */
-            flex-direction: column;
-            justify-content: center; align-items: center;
-            transition: opacity 1s;
-        }
-        
-        .cat-sticker {
-            width: 200px;
-            animation: bounce 2s infinite;
-        }
-        
-        .hand-pointer {
-            font-size: 3rem;
-            margin-top: 20px;
-            cursor: pointer;
-            animation: handMove 1s infinite alternate;
-            filter: drop-shadow(0 0 10px #fff);
-        }
-        .hint { margin-top: 10px; font-size: 0.9rem; opacity: 0.8; }
-
-        /* --- 5. THE BOOK (Final Stage) --- */
-        #book-layer {
-            display: none; /* Hidden initially */
-            position: relative;
-            z-index: 30;
-            width: 90%; max-width: 700px;
-            perspective: 1500px;
-        }
-        
-        .book {
-            display: flex;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 50px rgba(255, 64, 129, 0.5);
-            overflow: hidden;
-            transform-style: preserve-3d;
-            animation: openBook 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-            min-height: 400px;
-        }
-
-        .page {
-            flex: 1;
-            padding: 20px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center;
-        }
-        
-        .left-page {
-            background: #fff0f5;
-            border-right: 2px dashed #ffc1e3;
-        }
-        .right-page { background: #fff; }
-
-        .polaroid {
-            background: #fff; padding: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transform: rotate(-3deg); margin-bottom: 20px; width: 85%;
-        }
-        .polaroid img { width: 100%; border-radius: 5px; }
-
-        h2 { color: #ff4081; font-family: 'Pacifico', cursive; font-size: 2rem; margin-bottom: 10px; }
-        p { color: #555; line-height: 1.6; font-size: 1.1rem; }
-        .highlight { color: #ff4081; font-weight: bold; }
-
-        /* Mobile Responsive Book */
-        @media (max-width: 600px) {
-            .book { flex-direction: column; min-height: auto; }
-            .left-page { border-right: none; border-bottom: 2px dashed #ffc1e3; padding: 30px 20px; }
-            .right-page { padding: 30px 20px; }
-            #book-layer { max-height: 85vh; overflow-y: auto; }
-        }
-
-        /* --- 6. PARTICLES & EXTRAS --- */
-        .particle {
-            position: absolute;
-            background: #fff;
-            border-radius: 50%;
             pointer-events: none;
         }
 
-        /* Music Button */
-        .music-btn {
-            position: fixed; top: 20px; right: 20px;
-            z-index: 100;
-            font-size: 1.5rem;
-            cursor: pointer;
-            opacity: 0.7;
-            animation: spin 5s linear infinite;
+        .matrix-text {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #0f0;
+            font-size: 6rem;
+            text-shadow: 0 0 20px #0f0;
+            animation: glitch 0.2s infinite;
         }
 
-        /* Keyframes */
-        @keyframes glitch { 0% { transform: skew(0deg); } 20% { transform: skew(-10deg); } 40% { transform: skew(10deg); } 100% { transform: skew(0deg); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes handMove { from { transform: translateY(0); } to { transform: translateY(10px); } }
-        @keyframes openBook { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .neon-text {
+            display: none; /* Hidden Initially */
+            color: #ff4081;
+            text-shadow: 0 0 10px #ff4081, 0 0 20px #ff4081, 0 0 40px #ff4081;
+            font-family: 'Dancing Script', cursive;
+            text-align: center;
+            font-size: 3rem;
+            line-height: 1.2;
+            animation: zoomIn 0.5s ease-out;
+        }
 
+        /* Interaction Layer */
+        #interaction-layer {
+            display: none; /* Hidden Initially */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20;
+            background: rgba(0,0,0,0.85);
+            flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .cat-sticker { width: 180px; margin-bottom: 20px; }
+        .hand-pointer {
+            font-size: 3rem; cursor: pointer;
+            animation: bounce 1s infinite alternate;
+            filter: drop-shadow(0 0 10px white);
+        }
+
+        /* Book Layer */
+        #book-layer {
+            display: none; /* Hidden Initially */
+            position: relative; z-index: 30;
+            width: 90%; max-width: 700px;
+            perspective: 1500px;
+        }
+        .book {
+            display: flex; background: #fff;
+            border-radius: 10px; overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 64, 129, 0.4);
+            animation: openBook 1s forwards;
+            min-height: 400px;
+        }
+        .left-page {
+            flex: 1; background: #fff0f5;
+            padding: 20px; text-align: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-right: 2px dashed #ffc1e3;
+        }
+        .right-page {
+            flex: 1; background: #fff;
+            padding: 30px; text-align: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        
+        .polaroid {
+            background: white; padding: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transform: rotate(-3deg); width: 100%; max-width: 200px;
+            margin-bottom: 10px;
+        }
+        .polaroid img { width: 100%; border-radius: 4px; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .book { flex-direction: column; }
+            .left-page { border-right: none; border-bottom: 2px dashed #eee; }
+            .neon-text { font-size: 2.2rem; }
+        }
+
+        /* Music Btn */
+        .music-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 100;
+            font-size: 1.5rem; cursor: pointer; opacity: 0.8;
+            animation: spin 4s linear infinite;
+        }
+
+        /* Animations */
+        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(15px); } }
+        @keyframes openBook { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -167,107 +135,11 @@
     </div>
 
     <div id="interaction-layer">
-        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-sticker" alt="Cat">
-        
-        <div class="hand-pointer" onclick="revealBook()">
-            👆
-        </div>
-        <div class="hint">Tap to Open</div>
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-sticker">
+        <div class="hand-pointer" id="hand-btn">👆</div>
+        <p style="margin-top:10px; color:white;">Tap to Open</p>
     </div>
 
     <div id="book-layer">
-        <div class="book">
-            <div class="left-page">
-                <h2>For Khona</h2>
-                <div class="polaroid">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Khona">
-                </div>
-                <p style="font-weight: bold; color: #ff80ab;">Oct 21, 2026</p>
-            </div>
+        <div class
 
-            <div class="right-page">
-                <h2>Happy Birthday!</h2>
-                <p>
-                    Dear <span class="highlight">Khona</span>,<br><br>
-                    You are the most precious gift in my life. Wishing you a day filled with magic, love, and sweet surprises!
-                    <br><br>
-                    Always keep smiling! ✨
-                </p>
-                <br>
-                <div style="font-size: 2rem;">🎂🎈🎁</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="music-btn" onclick="toggleMusic()">🎵</div>
-    <audio id="bg-music" loop>
-        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
-    </audio>
-
-    <script>
-        // --- 1. MATRIX RAIN EFFECT ---
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-        
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize); resize();
-
-        const chars = "KHONA❤️BIRTHDAY🎂2026✨ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-
-        function drawMatrix() {
-            // Semi-transparent black to create trail effect
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Text Color (Cycling colors or Green/Pink)
-            ctx.font = fontSize + 'px monospace';
-            
-            for(let i=0; i<drops.length; i++) {
-                const text = chars[Math.floor(Math.random()*chars.length)];
-                
-                // Color Logic: Randomly Pink or Matrix Green
-                ctx.fillStyle = Math.random() > 0.8 ? '#ff4081' : '#0F0'; 
-                
-                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-                
-                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
-            }
-        }
-        const matrixInterval = setInterval(drawMatrix, 50);
-
-        // --- 2. SEQUENCE LOGIC ---
-        const countdownEl = document.getElementById('countdown');
-        const birthdayTextEl = document.getElementById('birthday-text');
-        const loadingScreen = document.getElementById('loading-screen');
-        const interactionLayer = document.getElementById('interaction-layer');
-        const bookLayer = document.getElementById('book-layer');
-        const audio = document.getElementById('bg-music');
-
-        // Step 1: Countdown 3, 2, 1
-        let count = 3;
-        const timer = setInterval(() => {
-            count--;
-            if(count > 0) {
-                countdownEl.innerText = count;
-            } else {
-                clearInterval(timer);
-                // Step 2: Show HAPPY BIRTHDAY Text
-                countdownEl.style.display = 'none';
-                birthdayTextEl.style.display = 'block';
-                
-                // Hold text for 2 seconds, then show Interaction
-                setTimeout(() => {
-                    loadingScreen.style.opacity = '0'; // Fade out text
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                        interactionLayer.style.display = 'flex'; // Show Cat & Hand
-                    }, 1000);
-                }, 2000);
-            }
-        },
