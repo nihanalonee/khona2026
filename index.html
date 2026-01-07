@@ -4,289 +4,270 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday Khona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Indie+Flower&family=Quicksand:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&family=Quicksand:wght@500&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Global Reset --- */
+        /* --- 1. RESET & BASIC --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: #0a0a0a;
-            color: white;
+            background: #000;
+            overflow: hidden;
             font-family: 'Quicksand', sans-serif;
             height: 100vh;
             width: 100vw;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            color: #fff;
         }
 
-        /* --- 2. Background Particles --- */
-        #particle-canvas {
+        /* --- 2. MATRIX RAIN CANVAS --- */
+        canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        }
+
+        /* --- 3. COUNTDOWN & TEXT OVERLAY --- */
+        #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; pointer-events: none;
-        }
-
-        /* --- 3. START SCREEN (The Envelope/Gift) --- */
-        #start-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 100;
-            background: rgba(10, 10, 10, 0.95); /* Slight fade */
-            transition: opacity 1s ease, visibility 1s;
-        }
-        
-        /* Pulse Animation for Start Button */
-        .start-btn {
-            background: #ff4081;
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 2rem;
-            box-shadow: 0 0 20px rgba(255, 64, 129, 0.6);
-            cursor: pointer;
-            animation: pulse 1.5s infinite;
-            border: 2px solid white;
-        }
-        .start-text {
-            margin-top: 20px;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
-            opacity: 0.8;
-            animation: fadeInOut 2s infinite;
-        }
-
-        /* --- 4. MAIN CONTENT (The Book) --- */
-        #main-content {
-            display: none; /* Hidden Initially */
-            position: relative;
             z-index: 10;
-            width: 90%;
-            max-width: 700px;
-            height: auto;
-            animation: zoomIn 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column;
+            pointer-events: none; /* Let clicks pass through if needed */
+        }
+        .matrix-text {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #0f0; /* Matrix Green initially */
+            font-size: 5rem;
+            text-shadow: 0 0 20px #0f0;
+            animation: glitch 1s infinite;
+        }
+        /* Pink Neon for Birthday Text */
+        .neon-text {
+            color: #ff4081;
+            text-shadow: 0 0 20px #ff4081, 0 0 40px #ff4081;
+            font-family: 'Dancing Script', cursive;
+            text-align: center;
+            display: none; /* Hidden initially */
         }
 
-        /* The Open Book Container */
-        .book-container {
-            display: flex;
-            background: #fffaf0; /* Paper color */
-            border-radius: 15px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            overflow: hidden;
-            min-height: 400px;
-            position: relative;
+        /* --- 4. INTERACTIVE STAGE (Cat & Hand) --- */
+        #interaction-layer {
+            display: none; /* Hidden initially */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20;
+            background: rgba(0,0,0,0.8); /* Fade background */
+            flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 1s;
         }
         
-        /* Book Spine (Middle Line) */
-        .book-container::before {
-            content: ''; position: absolute;
-            left: 50%; top: 0; bottom: 0; width: 2px;
-            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent);
-            z-index: 5;
+        .cat-sticker {
+            width: 200px;
+            animation: bounce 2s infinite;
+        }
+        
+        .hand-pointer {
+            font-size: 3rem;
+            margin-top: 20px;
+            cursor: pointer;
+            animation: handMove 1s infinite alternate;
+            filter: drop-shadow(0 0 10px #fff);
+        }
+        .hint { margin-top: 10px; font-size: 0.9rem; opacity: 0.8; }
+
+        /* --- 5. THE BOOK (Final Stage) --- */
+        #book-layer {
+            display: none; /* Hidden initially */
+            position: relative;
+            z-index: 30;
+            width: 90%; max-width: 700px;
+            perspective: 1500px;
+        }
+        
+        .book {
+            display: flex;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(255, 64, 129, 0.5);
+            overflow: hidden;
+            transform-style: preserve-3d;
+            animation: openBook 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            min-height: 400px;
         }
 
-        /* Pages */
         .page {
             flex: 1;
-            padding: 25px;
+            padding: 20px;
             display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+            align-items: center; justify-content: center;
             text-align: center;
         }
-
-        /* Left Page Styling */
+        
         .left-page {
-            background: #fff5f8; /* Light Pink tint */
-            border-right: 1px solid #eee;
+            background: #fff0f5;
+            border-right: 2px dashed #ffc1e3;
         }
-        .cat-frame {
-            background: white;
-            padding: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transform: rotate(-3deg);
-            margin-bottom: 15px;
-            width: 100%;
-        }
-        .cat-img { width: 100%; border-radius: 5px; }
-        .date-badge {
-            background: #ff4081; color: white;
-            padding: 5px 15px; border-radius: 20px;
-            font-size: 0.8rem; font-weight: bold;
-            margin-top: 10px;
-        }
+        .right-page { background: #fff; }
 
-        /* Right Page Styling */
-        .right-page {
-            background: #fff;
-            position: relative;
+        .polaroid {
+            background: #fff; padding: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: rotate(-3deg); margin-bottom: 20px; width: 85%;
         }
-        h1 {
-            font-family: 'Dancing Script', cursive;
-            color: #ff4081; font-size: 2.2rem;
-            margin-bottom: 15px;
-        }
-        .message {
-            font-family: 'Indie Flower', cursive;
-            color: #444; font-size: 1.2rem;
-            line-height: 1.6;
-        }
+        .polaroid img { width: 100%; border-radius: 5px; }
+
+        h2 { color: #ff4081; font-family: 'Pacifico', cursive; font-size: 2rem; margin-bottom: 10px; }
+        p { color: #555; line-height: 1.6; font-size: 1.1rem; }
         .highlight { color: #ff4081; font-weight: bold; }
 
-        /* Sticker */
-        .sticker-heart {
-            position: absolute; bottom: 15px; right: 15px;
-            font-size: 2rem; transform: rotate(15deg);
-            opacity: 0.8;
-        }
-
-        /* Music Controls */
-        .music-toggle {
-            position: fixed; top: 20px; right: 20px;
-            z-index: 200;
-            background: rgba(255,255,255,0.1);
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
-        }
-        .music-toggle.playing { border-color: #ff4081; animation: spin 4s linear infinite; }
-
-        /* Responsive Design (Mobile Stack) */
+        /* Mobile Responsive Book */
         @media (max-width: 600px) {
-            .book-container { flex-direction: column; min-height: auto; }
-            .book-container::before { width: 100%; height: 2px; top: 50%; left: 0; bottom: auto; display: none; }
-            .left-page { padding: 20px; border-bottom: 2px dashed #eee; border-right: none; }
+            .book { flex-direction: column; min-height: auto; }
+            .left-page { border-right: none; border-bottom: 2px dashed #ffc1e3; padding: 30px 20px; }
             .right-page { padding: 30px 20px; }
-            h1 { font-size: 1.8rem; }
-            #main-content { margin-top: 50px; margin-bottom: 50px; overflow-y: auto; max-height: 90vh; }
+            #book-layer { max-height: 85vh; overflow-y: auto; }
         }
 
-        /* Animations */
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes fadeInOut { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* --- 6. PARTICLES & EXTRAS --- */
+        .particle {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
 
-        /* Footer */
-        .credit { position: fixed; bottom: 10px; font-size: 0.7rem; color: #555; z-index: 5; }
+        /* Music Button */
+        .music-btn {
+            position: fixed; top: 20px; right: 20px;
+            z-index: 100;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            animation: spin 5s linear infinite;
+        }
+
+        /* Keyframes */
+        @keyframes glitch { 0% { transform: skew(0deg); } 20% { transform: skew(-10deg); } 40% { transform: skew(10deg); } 100% { transform: skew(0deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes handMove { from { transform: translateY(0); } to { transform: translateY(10px); } }
+        @keyframes openBook { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
 
-    <canvas id="particle-canvas"></canvas>
+    <canvas id="matrix"></canvas>
 
-    <div id="start-screen" onclick="startExperience()">
-        <div class="start-btn">💌</div>
-        <div class="start-text">Tap to Open Gift</div>
+    <div id="loading-screen">
+        <div class="matrix-text" id="countdown">3</div>
+        <div class="neon-text" id="birthday-text">
+            HAPPY<br>BIRTHDAY<br>TO YOU<br>KHONA ❤️
+        </div>
     </div>
 
-    <audio id="bg-music" loop>
-        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
-    </audio>
-    <div class="music-toggle" onclick="toggleMusic()">🎵</div>
+    <div id="interaction-layer">
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-sticker" alt="Cat">
+        
+        <div class="hand-pointer" onclick="revealBook()">
+            👆
+        </div>
+        <div class="hint">Tap to Open</div>
+    </div>
 
-    <div id="main-content">
-        <div class="book-container">
-            <div class="page left-page">
+    <div id="book-layer">
+        <div class="book">
+            <div class="left-page">
                 <h2>For Khona</h2>
-                <div class="cat-frame">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Cute Cat" class="cat-img">
+                <div class="polaroid">
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Khona">
                 </div>
-                <div class="date-badge">Oct 21, 2026</div>
+                <p style="font-weight: bold; color: #ff80ab;">Oct 21, 2026</p>
             </div>
 
-            <div class="page right-page">
-                <h1>Happy Birthday!</h1>
-                <p class="message">
+            <div class="right-page">
+                <h2>Happy Birthday!</h2>
+                <p>
                     Dear <span class="highlight">Khona</span>,<br><br>
-                    You are the most precious gift in this world. Wishing you a day full of love, magic, and sweet surprises! 
+                    You are the most precious gift in my life. Wishing you a day filled with magic, love, and sweet surprises!
                     <br><br>
-                    Stay happy always! ✨
+                    Always keep smiling! ✨
                 </p>
-                
-                <div class="sticker-heart">❤️</div>
+                <br>
+                <div style="font-size: 2rem;">🎂🎈🎁</div>
             </div>
         </div>
     </div>
 
-    <div class="credit">Made by Nihan</div>
+    <div class="music-btn" onclick="toggleMusic()">🎵</div>
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
+    </audio>
 
     <script>
-        // --- 1. Particle Logic ---
-        const canvas = document.getElementById('particle-canvas');
+        // --- 1. MATRIX RAIN EFFECT ---
+        const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
 
-        let particles = [];
-        const colors = ['#ff4081', '#ffffff', '#ffeb3b', '#80d8ff'];
+        const chars = "KHONA❤️BIRTHDAY🎂2026✨ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
 
-        function createParticle() {
-            return {
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                size: Math.random() * 2 + 0.5,
-                speedX: (Math.random() - 0.5) * 0.3,
-                speedY: (Math.random() - 0.5) * 0.3,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                opacity: Math.random()
-            };
-        }
-
-        for(let i=0; i<80; i++) particles.push(createParticle());
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                ctx.globalAlpha = p.opacity;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                p.x += p.speedX; p.y += p.speedY;
-                if(p.x < 0 || p.x > canvas.width) p.speedX *= -1;
-                if(p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-
-        // --- 2. Interaction Logic ---
-        const startScreen = document.getElementById('start-screen');
-        const mainContent = document.getElementById('main-content');
-        const audio = document.getElementById('bg-music');
-        const musicBtn = document.querySelector('.music-toggle');
-        let isPlaying = false;
-
-        function startExperience() {
-            // Hide Start Screen
-            startScreen.style.opacity = '0';
-            startScreen.style.visibility = 'hidden';
+        function drawMatrix() {
+            // Semi-transparent black to create trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Show Main Content with delay
-            setTimeout(() => {
-                mainContent.style.display = 'block';
-            }, 300);
-
-            // Play Music
-            toggleMusic(true);
-        }
-
-        function toggleMusic(forcePlay = false) {
-            if (audio.paused || forcePlay) {
-                audio.play().then(() => {
-                    isPlaying = true;
-                    musicBtn.classList.add('playing');
-                }).catch(e => console.log("User interaction required for audio"));
-            } else {
-                audio.pause();
-                isPlaying = false;
-                musicBtn.classList.remove('playing');
+            // Text Color (Cycling colors or Green/Pink)
+            ctx.font = fontSize + 'px monospace';
+            
+            for(let i=0; i<drops.length; i++) {
+                const text = chars[Math.floor(Math.random()*chars.length)];
+                
+                // Color Logic: Randomly Pink or Matrix Green
+                ctx.fillStyle = Math.random() > 0.8 ? '#ff4081' : '#0F0'; 
+                
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
             }
         }
-    </script>
-</body>
-</html>
+        const matrixInterval = setInterval(drawMatrix, 50);
+
+        // --- 2. SEQUENCE LOGIC ---
+        const countdownEl = document.getElementById('countdown');
+        const birthdayTextEl = document.getElementById('birthday-text');
+        const loadingScreen = document.getElementById('loading-screen');
+        const interactionLayer = document.getElementById('interaction-layer');
+        const bookLayer = document.getElementById('book-layer');
+        const audio = document.getElementById('bg-music');
+
+        // Step 1: Countdown 3, 2, 1
+        let count = 3;
+        const timer = setInterval(() => {
+            count--;
+            if(count > 0) {
+                countdownEl.innerText = count;
+            } else {
+                clearInterval(timer);
+                // Step 2: Show HAPPY BIRTHDAY Text
+                countdownEl.style.display = 'none';
+                birthdayTextEl.style.display = 'block';
+                
+                // Hold text for 2 seconds, then show Interaction
+                setTimeout(() => {
+                    loadingScreen.style.opacity = '0'; // Fade out text
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        interactionLayer.style.display = 'flex'; // Show Cat & Hand
+                    }, 1000);
+                }, 2000);
+            }
+        },
