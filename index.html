@@ -4,291 +4,289 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday Khona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Indie+Flower&family=Quicksand:wght@500&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Global Reset & Body --- */
+        /* --- 1. Global Reset --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: #050505; /* Deep Black */
-            overflow: hidden;
-            font-family: 'Poppins', sans-serif;
+            background-color: #0a0a0a;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
             height: 100vh;
             width: 100vw;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            color: white;
         }
 
-        /* --- 2. Canvas Layers --- */
-        #rain-canvas {
-            position: fixed; top: 0; left: 0; z-index: 0; opacity: 0.2;
-        }
-        #fireworks-canvas {
-            position: fixed; top: 0; left: 0; z-index: 99; pointer-events: none;
-        }
-
-        /* --- 3. Countdown Layer --- */
-        #countdown-layer {
+        /* --- 2. Background Particles --- */
+        #particle-canvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #050505; z-index: 2000;
+            z-index: 0; pointer-events: none;
+        }
+
+        /* --- 3. START SCREEN (The Envelope/Gift) --- */
+        #start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.95); /* Slight fade */
+            transition: opacity 1s ease, visibility 1s;
+        }
+        
+        /* Pulse Animation for Start Button */
+        .start-btn {
+            background: #ff4081;
+            width: 80px; height: 80px;
+            border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
+            font-size: 2rem;
+            box-shadow: 0 0 20px rgba(255, 64, 129, 0.6);
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+            border: 2px solid white;
         }
-        .count-number {
-            font-size: 15vw;
-            font-weight: bold;
-            background: linear-gradient(45deg, #ff4081, #ff80ab);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(255, 64, 129, 0.5);
-            animation: pulse 0.8s infinite;
-        }
-
-        /* --- 4. Gift Box Layer --- */
-        #gift-layer {
-            display: none; position: relative; z-index: 10;
-            text-align: center; cursor: pointer; width: 100%;
-        }
-        .gift-emoji {
-            font-size: 20vw; max-font-size: 120px;
-            filter: drop-shadow(0 0 25px rgba(255, 64, 129, 0.6));
-            animation: float 2s ease-in-out infinite;
-            transition: transform 0.2s;
-        }
-        .gift-emoji:active { transform: scale(0.9); }
-        .tap-text {
-            margin-top: 15px; font-size: 1.2rem; letter-spacing: 2px;
-            color: rgba(255,255,255,0.8); animation: blink 1.5s infinite;
+        .start-text {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            animation: fadeInOut 2s infinite;
         }
 
-        /* --- 5. Content Card (Glassmorphism) --- */
-        #content-layer {
-            display: none; position: relative; z-index: 20;
+        /* --- 4. MAIN CONTENT (The Book) --- */
+        #main-content {
+            display: none; /* Hidden Initially */
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 700px;
+            height: auto;
+            animation: zoomIn 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        /* The Open Book Container */
+        .book-container {
+            display: flex;
+            background: #fffaf0; /* Paper color */
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        /* Book Spine (Middle Line) */
+        .book-container::before {
+            content: ''; position: absolute;
+            left: 50%; top: 0; bottom: 0; width: 2px;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent);
+            z-index: 5;
+        }
+
+        /* Pages */
+        .page {
+            flex: 1;
+            padding: 25px;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             text-align: center;
-            width: 85%; max-width: 380px;
-            /* Glass Effect */
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 30px;
-            border-radius: 25px;
-            border: 1px solid rgba(255, 64, 129, 0.3);
-            box-shadow: 0 0 40px rgba(255, 64, 129, 0.2);
-            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        /* Left Page Styling */
+        .left-page {
+            background: #fff5f8; /* Light Pink tint */
+            border-right: 1px solid #eee;
+        }
+        .cat-frame {
+            background: white;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: rotate(-3deg);
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        .cat-img { width: 100%; border-radius: 5px; }
+        .date-badge {
+            background: #ff4081; color: white;
+            padding: 5px 15px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Right Page Styling */
+        .right-page {
+            background: #fff;
+            position: relative;
+        }
         h1 {
             font-family: 'Dancing Script', cursive;
-            font-size: 2.5rem; color: #ff4081;
-            margin-bottom: 5px; line-height: 1.2;
-            text-shadow: 0 0 15px rgba(255, 64, 129, 0.6);
+            color: #ff4081; font-size: 2.2rem;
+            margin-bottom: 15px;
         }
-        .date-badge {
-            display: inline-block;
-            background: rgba(255, 64, 129, 0.2);
-            padding: 5px 15px; border-radius: 20px;
-            font-size: 0.8rem; font-weight: bold; color: #ff80ab;
-            margin-bottom: 15px; border: 1px solid rgba(255, 64, 129, 0.3);
+        .message {
+            font-family: 'Indie Flower', cursive;
+            color: #444; font-size: 1.2rem;
+            line-height: 1.6;
         }
-        .cat-img {
-            width: 100%; border-radius: 15px; margin: 10px 0;
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        .highlight { color: #ff4081; font-weight: bold; }
+
+        /* Sticker */
+        .sticker-heart {
+            position: absolute; bottom: 15px; right: 15px;
+            font-size: 2rem; transform: rotate(15deg);
+            opacity: 0.8;
         }
 
-        /* Buttons */
-        .social-buttons {
-            display: flex; gap: 12px; justify-content: center; margin-top: 20px;
+        /* Music Controls */
+        .music-toggle {
+            position: fixed; top: 20px; right: 20px;
+            z-index: 200;
+            background: rgba(255,255,255,0.1);
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
         }
-        .btn {
-            text-decoration: none; padding: 10px 18px; border-radius: 50px;
-            font-size: 0.85rem; color: white; font-weight: 600;
-            display: flex; align-items: center; gap: 6px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .btn-insta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        .btn-tiktok { background: #000; border: 1px solid #444; }
+        .music-toggle.playing { border-color: #ff4081; animation: spin 4s linear infinite; }
 
-        /* Footer */
-        .credit {
-            position: fixed; bottom: 15px; width: 100%; text-align: center;
-            font-size: 0.75rem; color: rgba(255,255,255,0.4); z-index: 5;
-            font-family: monospace; letter-spacing: 1px;
+        /* Responsive Design (Mobile Stack) */
+        @media (max-width: 600px) {
+            .book-container { flex-direction: column; min-height: auto; }
+            .book-container::before { width: 100%; height: 2px; top: 50%; left: 0; bottom: auto; display: none; }
+            .left-page { padding: 20px; border-bottom: 2px dashed #eee; border-right: none; }
+            .right-page { padding: 30px 20px; }
+            h1 { font-size: 1.8rem; }
+            #main-content { margin-top: 50px; margin-bottom: 50px; overflow-y: auto; max-height: 90vh; }
         }
-        .credit span { color: #ff4081; font-weight: bold; }
 
         /* Animations */
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes fadeInOut { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Footer */
+        .credit { position: fixed; bottom: 10px; font-size: 0.7rem; color: #555; z-index: 5; }
 
     </style>
 </head>
 <body>
 
-    <canvas id="rain-canvas"></canvas>
-    <canvas id="fireworks-canvas"></canvas>
+    <canvas id="particle-canvas"></canvas>
+
+    <div id="start-screen" onclick="startExperience()">
+        <div class="start-btn">💌</div>
+        <div class="start-text">Tap to Open Gift</div>
+    </div>
 
     <audio id="bg-music" loop>
         <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
     </audio>
+    <div class="music-toggle" onclick="toggleMusic()">🎵</div>
 
-    <div id="countdown-layer">
-        <div class="count-number" id="count-display">3</div>
-    </div>
+    <div id="main-content">
+        <div class="book-container">
+            <div class="page left-page">
+                <h2>For Khona</h2>
+                <div class="cat-frame">
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Cute Cat" class="cat-img">
+                </div>
+                <div class="date-badge">Oct 21, 2026</div>
+            </div>
 
-    <div id="gift-layer" onclick="openGift()">
-        <div class="gift-emoji">🎁</div>
-        <div class="tap-text">Tap to Open</div>
-    </div>
-
-    <div id="content-layer">
-        <h1>Happy Birthday<br>Khona 🥰</h1>
-        <div class="date-badge">October 21, 2026</div>
-        
-        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Cute Cat" class="cat-img">
-        
-        <p style="color:#eee; font-size:0.95rem;">Wishing you a magical day filled with love! ✨</p>
-
-        <div class="social-buttons">
-            <a href="https://www.instagram.com/khona2025" target="_blank" class="btn btn-insta">
-                📸 Instagram
-            </a>
-            <a href="https://www.tiktok.com/@khona513" target="_blank" class="btn btn-tiktok">
-                🎵 TikTok
-            </a>
+            <div class="page right-page">
+                <h1>Happy Birthday!</h1>
+                <p class="message">
+                    Dear <span class="highlight">Khona</span>,<br><br>
+                    You are the most precious gift in this world. Wishing you a day full of love, magic, and sweet surprises! 
+                    <br><br>
+                    Stay happy always! ✨
+                </p>
+                
+                <div class="sticker-heart">❤️</div>
+            </div>
         </div>
     </div>
 
-    <div class="credit">This code made by <span>Nihan</span></div>
+    <div class="credit">Made by Nihan</div>
 
     <script>
-        // Use 'load' to ensure everything is ready before starting logic
-        window.addEventListener('load', function() {
-            
-            // --- 1. Matrix Rain ---
-            const canvas = document.getElementById('rain-canvas');
-            const ctx = canvas.getContext('2d');
-            
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
+        // --- 1. Particle Logic ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-            const chars = "KHONA❤️BDAY🎂2026✨";
-            const fontSize = 14;
-            const columns = canvas.width / fontSize;
-            const drops = Array(Math.floor(columns)).fill(1);
+        let particles = [];
+        const colors = ['#ff4081', '#ffffff', '#ffeb3b', '#80d8ff'];
 
-            function drawRain() {
-                ctx.fillStyle = 'rgba(5, 5, 5, 0.1)'; // Fade effect
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.font = fontSize + 'px arial';
-
-                for(let i=0; i<drops.length; i++) {
-                    const text = chars[Math.floor(Math.random()*chars.length)];
-                    // Random Pink & White colors
-                    ctx.fillStyle = Math.random() > 0.8 ? '#fff' : '#ff4081'; 
-                    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-                    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
-                    drops[i]++;
-                }
-            }
-            setInterval(drawRain, 50);
-
-            // --- 2. Fireworks Effect (New) ---
-            const fwCanvas = document.getElementById('fireworks-canvas');
-            const fwCtx = fwCanvas.getContext('2d');
-            let particles = [];
-            
-            function resizeFW() {
-                fwCanvas.width = window.innerWidth;
-                fwCanvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resizeFW);
-            resizeFW();
-
-            function createFirework(x, y) {
-                const colors = ['#ff4081', '#18ffff', '#ffeb3b', '#ffffff'];
-                for(let i=0; i<30; i++) {
-                    particles.push({
-                        x: x, y: y,
-                        vx: (Math.random() - 0.5) * 10,
-                        vy: (Math.random() - 0.5) * 10,
-                        life: 100,
-                        color: colors[Math.floor(Math.random() * colors.length)],
-                        size: Math.random() * 3 + 1
-                    });
-                }
-            }
-
-            function updateFireworks() {
-                fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-                for(let i=0; i<particles.length; i++) {
-                    let p = particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.vy += 0.05; // gravity
-                    p.life--;
-                    p.size *= 0.96; // shrink
-                    
-                    fwCtx.fillStyle = p.color;
-                    fwCtx.beginPath();
-                    fwCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                    fwCtx.fill();
-
-                    if(p.life <= 0 || p.size < 0.1) {
-                        particles.splice(i, 1);
-                        i--;
-                    }
-                }
-                requestAnimationFrame(updateFireworks);
-            }
-            updateFireworks(); // Start Loop
-
-            // --- 3. Main Logic ---
-            const countDisplay = document.getElementById('count-display');
-            const countLayer = document.getElementById('countdown-layer');
-            const giftLayer = document.getElementById('gift-layer');
-            const contentLayer = document.getElementById('content-layer');
-            const audio = document.getElementById('bg-music');
-
-            let currentCount = 3;
-
-            // Robust Countdown
-            const countdownInterval = setInterval(() => {
-                currentCount--;
-                if (currentCount > 0) {
-                    countDisplay.innerText = currentCount;
-                } else {
-                    clearInterval(countdownInterval);
-                    countLayer.style.display = 'none';
-                    giftLayer.style.display = 'block';
-                }
-            }, 1000);
-
-            // Global Open Function
-            window.openGift = function() {
-                // Play Audio
-                audio.play().catch(e => console.log("Audio needs interaction"));
-                
-                // Hide Gift
-                giftLayer.style.display = 'none';
-                
-                // Trigger Fireworks from center
-                createFirework(window.innerWidth/2, window.innerHeight/2);
-                
-                // Show Content with delay for smooth effect
-                setTimeout(() => {
-                    contentLayer.style.display = 'block';
-                }, 100);
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2 + 0.5,
+                speedX: (Math.random() - 0.5) * 0.3,
+                speedY: (Math.random() - 0.5) * 0.3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                opacity: Math.random()
             };
-        });
+        }
+
+        for(let i=0; i<80; i++) particles.push(createParticle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.globalAlpha = p.opacity;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                p.x += p.speedX; p.y += p.speedY;
+                if(p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // --- 2. Interaction Logic ---
+        const startScreen = document.getElementById('start-screen');
+        const mainContent = document.getElementById('main-content');
+        const audio = document.getElementById('bg-music');
+        const musicBtn = document.querySelector('.music-toggle');
+        let isPlaying = false;
+
+        function startExperience() {
+            // Hide Start Screen
+            startScreen.style.opacity = '0';
+            startScreen.style.visibility = 'hidden';
+            
+            // Show Main Content with delay
+            setTimeout(() => {
+                mainContent.style.display = 'block';
+            }, 300);
+
+            // Play Music
+            toggleMusic(true);
+        }
+
+        function toggleMusic(forcePlay = false) {
+            if (audio.paused || forcePlay) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.classList.add('playing');
+                }).catch(e => console.log("User interaction required for audio"));
+            } else {
+                audio.pause();
+                isPlaying = false;
+                musicBtn.classList.remove('playing');
+            }
+        }
     </script>
 </body>
 </html>
