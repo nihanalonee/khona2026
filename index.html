@@ -2,422 +2,223 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday Khona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Global Setup --- */
+        /* --- 1. Base Setup --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #050505;
+            background-color: #000;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
-            flex-direction: column;
+            width: 100vw;
+            touch-action: none; /* Prevents scrolling while casting magic */
         }
 
-        /* --- 2. Background Effects --- */
-        #rain-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-        
-        #confetti-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 999;
-            pointer-events: none;
-        }
-
-        /* --- 3. Countdown Screen --- */
-        #countdown-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #000;
-            flex-direction: column;
-        }
-
-        .count-number {
-            font-size: 8rem;
-            color: #ff4081;
-            font-weight: bold;
-            text-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
-            animation: pop 0.8s ease-out infinite;
-        }
-
-        /* --- 4. Envelope Container --- */
-        .envelope-wrapper {
+        /* --- 2. Orientation Warning Overlay --- */
+        #rotate-warning {
             display: none;
-            position: relative;
-            z-index: 10;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-        
-        .envelope-wrapper:hover {
-            transform: scale(1.02);
-        }
-
-        .envelope {
-            position: relative;
-            width: 320px;
-            height: 220px;
-            background: #ff4081;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-            box-shadow: 0 10px 25px rgba(255, 64, 129, 0.3);
-        }
-
-        .envelope::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            width: 0;
-            height: 0;
-            border-top: 110px solid transparent;
-            border-right: 160px solid transparent;
-            border-bottom: 110px solid #d81b60;
-            border-left: 160px solid #d81b60;
-            border-bottom-left-radius: 10px;
-            z-index: 3;
-        }
-
-        .envelope::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            width: 0;
-            height: 0;
-            border-top: 110px solid transparent;
-            border-right: 160px solid #c2185b;
-            border-bottom: 110px solid #c2185b;
-            border-left: 160px solid transparent;
-            border-bottom-right-radius: 10px;
-            z-index: 3;
-        }
-
-        .flap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0;
-            height: 0;
-            border-top: 110px solid #ff80ab;
-            border-right: 160px solid transparent;
-            border-bottom: 110px solid transparent;
-            border-left: 160px solid transparent;
-            transform-origin: top;
-            transition: transform 0.6s ease-in-out, z-index 0.2s;
-            z-index: 4;
-        }
-
-        /* --- The Card Inside --- */
-        .card {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 280px;
-            height: 180px;
-            background: #fff;
-            border-radius: 10px;
-            transition: bottom 0.6s ease-in-out, height 0.6s ease-in-out;
-            z-index: 2;
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: center;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-        }
-
-        .envelope-wrapper.open .flap {
-            transform: rotateX(180deg);
-            z-index: 1;
-        }
-
-        .envelope-wrapper.open .card {
-            bottom: 100px;
-            height: 450px;
-            z-index: 5;
-        }
-
-        .card h2 {
-            font-family: 'Pacifico', cursive;
-            color: #d81b60;
-            margin: 5px 0 0 0;
-            font-size: 2rem;
-        }
-        
-        .date-text {
-            color: #ff4081;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .cat-gif {
-            width: 130px;
-            border-radius: 10px;
-            margin: 8px 0;
-            border: 2px solid #ffeebb;
-        }
-
-        .message {
-            font-size: 0.9rem;
-            color: #555;
-            line-height: 1.4;
-            margin-bottom: 12px;
-        }
-
-        /* Social Buttons */
-        .social-buttons {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .btn {
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 25px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: white;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-insta {
-            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
-            box-shadow: 0 4px 12px rgba(220, 39, 67, 0.4);
-        }
-
-        .btn-tiktok {
-            background: #000;
-            border: 1px solid #333;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        }
-
-        .click-hint {
-            position: absolute;
-            bottom: -50px;
-            width: 100%;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1rem;
-            animation: bounce 1.5s infinite;
-        }
-
-        /* Footer Credit */
-        .footer-credit {
             position: fixed;
-            bottom: 15px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.4);
-            font-family: 'Share Tech Mono', monospace;
-            z-index: 50;
-            letter-spacing: 1px;
-        }
-        
-        .footer-credit span {
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             color: #ff4081;
-            font-weight: bold;
+            text-align: center;
+        }
+        #rotate-warning svg {
+            width: 100px; height: 100px; fill: #ff4081;
+            animation: rotatePhone 2s infinite ease-in-out;
+        }
+        /* Show warning only on landscape */
+        @media screen and (orientation: landscape) {
+            #rotate-warning { display: flex; }
         }
 
-        @keyframes pop {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
+        /* --- 3. Background Rain Canvas --- */
+        #rain-canvas {
+            position: fixed; top: 0; left: 0; z-index: 1;
+            opacity: 0.5;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        /* --- 4. Main Container & States --- */
+        #main-container {
+            position: relative; z-index: 10;
+            height: 100%; width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
+
+        /* State A: Initial Gift Box */
+        #gift-state {
+            text-align: center;
+            cursor: pointer;
+            animation: float 2s ease-in-out infinite;
+        }
+        .gift-emoji { font-size: 100px; filter: drop-shadow(0 0 20px #ff4081); }
+        .hint-text { color: #fff; margin-top: 20px; letter-spacing: 2px; animation: pulse 1.5s infinite; }
+
+        /* State B: Wand Interaction Area */
+        #wand-state {
+            display: none; /* Hidden initially */
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            /* Hide default cursor, we use custom wand */
+            cursor: none; 
+        }
+        /* The custom wand follower */
+        #wand-follower {
+            position: absolute;
+            font-size: 40px;
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            filter: drop-shadow(0 0 10px #d500f9);
+            display: none;
+        }
+        /* Magic particles */
+        .magic-particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            animation: particleFade 1s forwards ease-out;
+            z-index: 50;
+        }
+
+        /* State C: Final Reveal */
+        #reveal-state {
+            display: none; /* Hidden initially */
+            text-align: center;
+            color: #fff;
+            z-index: 200;
+            animation: zoomIn 1s ease-out;
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+        #reveal-state h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: #ff4081;
+            text-shadow: 0 0 15px #d500f9;
+            line-height: 1.2;
+        }
+        .cat-gif {
+            width: 200px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 0 30px rgba(255, 64, 129, 0.5);
+        }
+
+        /* --- Animations --- */
+        @keyframes rotatePhone { 0%, 100% { transform: rotate(-90deg); } 50% { transform: rotate(0deg); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes particleFade { 
+            0% { opacity: 1; transform: scale(1) translate(0,0); } 
+            100% { opacity: 0; transform: scale(0) translate(var(--tx), var(--ty)); } 
+        }
+        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <canvas id="rain-canvas"></canvas>
-    <canvas id="confetti-canvas"></canvas>
-
     <audio id="bg-music" loop>
-        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
     </audio>
 
-    <div id="countdown-screen">
-        <div class="count-number" id="timer">3</div>
+    <div id="rotate-warning">
+        <svg viewBox="0 0 24 24"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.24-1.12l1.33 1.32-.66-.03C4.84 2.52 0 7.36 0 13.5c0 1.08.15 2.13.42 3.14L1.75 16c-.33-.83-.5-1.71-.5-2.5 0-4.77 3.87-8.63 8.63-8.63l-.64.03 3.8 3.8 1.31-1.32-6.11-6zM.42 7.36L1.75 8c.33.83.5 1.71.5 2.5 0 4.77 3.87 8.63 8.63 8.63l.64-.03-3.8-3.8-1.31 1.32 6.11 6 6.11-6-1.33-1.32.66.03c6.07.08 10.91-4.76 10.91-10.9 0-1.08-.15-2.13-.42-3.14L22.25 8c.33.83.5 1.71.5 2.5 0 4.77-3.87 8.63-8.63 8.63l.64-.03-3.8-3.8-1.31 1.32 6.11 6z"/></svg>
+        <h2>Please Rotate Your Phone</h2>
+        <p>This experience is best viewed in portrait mode.</p>
     </div>
 
-    <div class="envelope-wrapper" id="envelope" onclick="openGift()">
-        <div class="envelope">
-            <div class="flap"></div>
-            
-            <div class="card">
-                <h2>Happy Birthday</h2>
-                <strong style="color: #ff4081; font-size: 1.5rem;">Khona</strong>
-                <div class="date-text">October 21, 2026</div>
-                
-                <img src="https://media.giphy.com/media/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Cute Cat" class="cat-gif">
-                
-                <p class="message">Wishing you a day filled with<br>love & magic! ❤️✨</p>
-                
-                <div class="social-buttons">
-                    <a href="https://www.instagram.com/khona2025" target="_blank" class="btn btn-insta">
-                        📸 Instagram
-                    </a>
-                    <a href="https://www.tiktok.com/@khona513" target="_blank" class="btn btn-tiktok">
-                        🎵 TikTok
-                    </a>
-                </div>
-            </div>
+    <canvas id="rain-canvas"></canvas>
+
+    <div id="main-container">
+        
+        <div id="gift-state" onclick="startMagic()">
+            <div class="gift-emoji">🎁</div>
+            <div class="hint-text">Tap to start magic</div>
         </div>
-        <div class="click-hint">Tap to Open 🎁</div>
+
+        <div id="wand-state">
+            <div id="wand-follower">🪄</div>
+            <h3 style="color:white; text-align:center; margin-top:50px; opacity:0.7;">Move wand to cast spell ✨</h3>
+        </div>
+
+        <div id="reveal-state">
+            <h1>Happy Birthday to you<br>Khona 🥰</h1>
+            <img src="https://media.giphy.com/media/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-gif">
+            <p>Wishing you a magical day!</p>
+        </div>
     </div>
 
-    <div class="footer-credit">
-        This code made by <span>Nihan</span>
-    </div>
 
     <script>
-        // Matrix Rain
-        const rainCanvas = document.getElementById('rain-canvas');
-        const rCtx = rainCanvas.getContext('2d');
-
-        function resizeRain() {
-            rainCanvas.width = window.innerWidth;
-            rainCanvas.height = window.innerHeight;
+        // --- 1. Matrix Rain (Background) ---
+        const canvas = document.getElementById('rain-canvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resizeRain);
-        resizeRain();
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        const rainText = ["KHONA", "❤️", "BDAY", "🎂", "2026", "✨", "OCT 21"];
-        const fontSize = 18;
-        const columns = rainCanvas.width / fontSize;
+        const rainChars = "KHONA❤️✨BDAY🎂🎉";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
 
         function drawRain() {
-            rCtx.fillStyle = 'rgba(0, 0, 0, 0.08)'; 
-            rCtx.fillRect(0, 0, rainCanvas.width, rainCanvas.height);
-            rCtx.font = fontSize + 'px arial';
-
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = fontSize + 'px arial';
             for(let i=0; i<drops.length; i++) {
-                const text = rainText[Math.floor(Math.random() * rainText.length)];
-                rCtx.fillStyle = Math.random() > 0.8 ? '#fff' : '#ff4081'; 
-                rCtx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                if(drops[i] * fontSize > rainCanvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
+                const text = rainChars[Math.floor(Math.random() * rainChars.length)];
+                ctx.fillStyle = Math.random() > 0.9 ? '#fff' : '#ff4081';
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }
         }
         setInterval(drawRain, 40);
 
-        // Confetti
-        const confCanvas = document.getElementById('confetti-canvas');
-        const cCtx = confCanvas.getContext('2d');
-        confCanvas.width = window.innerWidth;
-        confCanvas.height = window.innerHeight;
 
-        let particles = [];
-        const colors = ['#ff4081', '#00bcd4', '#ffeb3b', '#ffffff', '#76ff03'];
-
-        function createConfetti() {
-            for(let i=0; i<150; i++) {
-                particles.push({
-                    x: window.innerWidth / 2,
-                    y: window.innerHeight / 2 + 100,
-                    vx: (Math.random() - 0.5) * 20,
-                    vy: (Math.random() - 2) * 15,
-                    size: Math.random() * 8 + 2,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    life: 100,
-                    gravity: 0.5
-                });
-            }
-        }
-
-        function drawConfetti() {
-            cCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
-            for(let i=0; i<particles.length; i++) {
-                let p = particles[i];
-                cCtx.fillStyle = p.color;
-                cCtx.beginPath();
-                cCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                cCtx.fill();
-                
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vy += p.gravity;
-                p.life--;
-
-                if(p.life <= 0) {
-                    particles.splice(i, 1);
-                    i--;
-                }
-            }
-            requestAnimationFrame(drawConfetti);
-        }
-        drawConfetti(); 
-
-        // Interaction
-        const timerEl = document.getElementById('timer');
-        const countdownScreen = document.getElementById('countdown-screen');
-        const envelope = document.getElementById('envelope');
+        // --- 2. Main Interaction Logic ---
+        const giftState = document.getElementById('gift-state');
+        const wandState = document.getElementById('wand-state');
+        const revealState = document.getElementById('reveal-state');
+        const wandFollower = document.getElementById('wand-follower');
         const audio = document.getElementById('bg-music');
-        
-        let count = 3;
-        const cInterval = setInterval(() => {
-            count--;
-            if(count > 0) {
-                timerEl.innerText = count;
-            } else {
-                clearInterval(cInterval);
-                countdownScreen.style.display = 'none';
-                envelope.style.display = 'block';
-            }
-        }, 1000);
 
-        function openGift() {
-            const wrapper = document.getElementById('envelope');
-            
-            if(!wrapper.classList.contains('open')) {
-                wrapper.classList.add('open');
-                document.querySelector('.click-hint').style.display = 'none';
-                
-                // Play new audio
-                audio.play().catch(e => console.log("Audio needs interaction"));
-                createConfetti(); 
-            }
+        let magicProgress = 0;
+        const MAGIC_THRESHOLD = 80; // How much "spell casting" needed
+        let isRevealed = false;
+
+        // Transition from Gift to Wand mode
+        function startMagic() {
+            giftState.style.display = 'none';
+            wandState.style.display = 'block';
+            wandFollower.style.display = 'block';
+            // Play audio
+            audio.play().catch(e => console.log("Audio interacted needed"));
+
+            // Attach move listeners
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('touchmove', handleMove, { passive: false });
         }
-    </script>
-</body>
-</html>
+
+        // Handle dragging/moving the wand
+        function handleMove(e) {
+            if(isRevealed) return;
+
+            e.preventDefault(); // Stop screen
