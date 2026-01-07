@@ -10,7 +10,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background-color: #000;
-            overflow: hidden; /* No scrolling */
+            overflow: hidden;
             font-family: 'Poppins', sans-serif;
             height: 100vh;
             width: 100vw;
@@ -41,7 +41,7 @@
             align-items: center;
         }
         .count-number {
-            font-size: 15vw; /* Responsive font size */
+            font-size: 15vw;
             color: #ff4081;
             font-weight: bold;
             animation: pop 0.8s infinite;
@@ -57,7 +57,7 @@
             width: 100%;
         }
         .gift-emoji {
-            font-size: 25vw; /* Responsive size based on screen width */
+            font-size: 25vw;
             max-font-size: 120px;
             animation: bounce 2s infinite;
             filter: drop-shadow(0 0 20px #ff4081);
@@ -74,9 +74,9 @@
             position: relative;
             z-index: 20;
             text-align: center;
-            width: 85%; /* Fits any mobile screen */
-            max-width: 350px; /* Won't get too big on PC */
-            background: rgba(20, 20, 20, 0.8);
+            width: 85%;
+            max-width: 350px;
+            background: rgba(20, 20, 20, 0.9);
             padding: 25px;
             border-radius: 20px;
             border: 2px solid #ff4081;
@@ -176,52 +176,47 @@
     <div class="credit">This code made by <span>Nihan</span></div>
 
     <script>
-        // --- 1. Responsive Matrix Rain ---
-        const canvas = document.getElementById('rain-canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Auto-resize canvas when screen size changes
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        const chars = "HAPPY BIRTHDAY KHONA ❤️";
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-
-        function drawRain() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#ff4081'; 
-            ctx.font = fontSize + 'px arial';
-
-            for(let i=0; i<drops.length; i++) {
-                const text = chars[Math.floor(Math.random()*chars.length)];
-                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
-                drops[i]++;
+        // Ensure the script runs ONLY after the page is fully loaded
+        window.addEventListener('load', function() {
+            
+            // --- 1. Rain Effect ---
+            const canvas = document.getElementById('rain-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
             }
-        }
-        setInterval(drawRain, 50);
+            window.addEventListener('resize', resize);
+            resize(); // Initial call
 
-        // --- 2. Logic ---
-        const countDisplay = document.getElementById('count-display');
-        const countLayer = document.getElementById('countdown-layer');
-        const giftLayer = document.getElementById('gift-layer');
-        const contentLayer = document.getElementById('content-layer');
-        const audio = document.getElementById('bg-music');
+            const chars = "HAPPY BIRTHDAY KHONA ❤️";
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
 
-        let count = 3;
+            function drawRain() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ff4081'; 
+                ctx.font = fontSize + 'px arial';
 
-        // Countdown Logic
-        const timer = setInterval(() => {
-            count--;
-            if (count > 0) {
-                countDisplay.innerText = count;
-            } else {
-                clearInterval(timer);
-                countLayer.style.display = 'none'; // Hide countdown
+                for(let i=0; i<drops.length; i++) {
+                    const text = chars[Math.floor(Math.random()*chars.length)];
+                    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
+                    drops[i]++;
+                }
+            }
+            setInterval(drawRain, 50);
+
+            // --- 2. Logic Flow ---
+            const countDisplay = document.getElementById('count-display');
+            const countLayer = document.getElementById('countdown-layer');
+            const giftLayer = document.getElementById('gift-layer');
+            const contentLayer = document.getElementById('content-layer');
+            const audio = document.getElementById('bg-music');
+
+            let currentCount = 3;
+
+            //
