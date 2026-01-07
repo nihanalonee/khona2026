@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday Khona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&family=Quicksand:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sacramento&family=Dancing+Script:wght@700&family=Quicksand:wght@500&display=swap" rel="stylesheet">
     <style>
-        /* --- RESET & BASIC --- */
+        /* --- 1. RESET & GLOBAL --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #000;
+            background-color: #000;
             overflow: hidden;
             font-family: 'Quicksand', sans-serif;
             height: 100vh;
@@ -17,13 +17,19 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
+            color: white;
         }
 
-        /* --- LAYERS --- */
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        
-        #loading-screen {
+        /* --- 2. MATRIX RAIN CANVAS --- */
+        canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.6; /* Slight fade to make text pop */
+        }
+
+        /* --- 3. COUNTDOWN LAYER --- */
+        #loading-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10;
             display: flex; justify-content: center; align-items: center;
@@ -31,115 +37,308 @@
             pointer-events: none;
         }
 
-        .matrix-text {
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            color: #0f0;
-            font-size: 6rem;
-            text-shadow: 0 0 20px #0f0;
-            animation: glitch 0.2s infinite;
+        .count-number {
+            font-family: monospace;
+            font-size: 8rem;
+            color: #fff;
+            text-shadow: 0 0 20px #ff007f; /* Neon Pink Glow */
+            animation: pulse 1s infinite;
+        }
+
+        /* --- 4. TITLE ANIMATION (Neon Text) --- */
+        #title-layer {
+            display: none; /* Hidden Initially */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 15;
+            flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.7); /* Dim background */
         }
 
         .neon-text {
-            display: none; /* Hidden Initially */
-            color: #ff4081;
-            text-shadow: 0 0 10px #ff4081, 0 0 20px #ff4081, 0 0 40px #ff4081;
-            font-family: 'Dancing Script', cursive;
+            font-family: 'Sacramento', cursive;
+            font-size: 3.5rem;
+            color: #fff;
             text-align: center;
-            font-size: 3rem;
-            line-height: 1.2;
-            animation: zoomIn 0.5s ease-out;
+            line-height: 1.4;
+            /* The Exact Pink Neon Glow */
+            text-shadow: 
+                0 0 5px #ff007f,
+                0 0 10px #ff007f,
+                0 0 20px #ff007f,
+                0 0 40px #ff007f,
+                0 0 80px #ff007f;
+            animation: zoomIn 1.5s ease-out forwards;
         }
 
-        /* Interaction Layer */
-        #interaction-layer {
+        .name-highlight {
+            color: #ff007f; /* Hot Pink */
+            font-size: 4rem;
+            display: block;
+            margin-top: 10px;
+        }
+
+        /* --- 5. GIFT BOX INTERACTION --- */
+        #gift-layer {
             display: none; /* Hidden Initially */
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 20;
-            background: rgba(0,0,0,0.85);
-            flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-        .cat-sticker { width: 180px; margin-bottom: 20px; }
-        .hand-pointer {
-            font-size: 3rem; cursor: pointer;
-            animation: bounce 1s infinite alternate;
-            filter: drop-shadow(0 0 10px white);
+            flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.85); /* Darker background */
+            transition: opacity 1s;
         }
 
-        /* Book Layer */
+        /* CSS 3D Gift Box */
+        .gift-box-container {
+            position: relative;
+            width: 120px; height: 120px;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+        }
+        .gift-box {
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2196f3, #1976d2); /* Blue Box like screenshot */
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(33, 150, 243, 0.6);
+            position: relative;
+        }
+        .ribbon-v {
+            position: absolute; left: 50%; top: 0; bottom: 0;
+            width: 20px; background: #ff5252; transform: translateX(-50%);
+        }
+        .ribbon-h {
+            position: absolute; top: 50%; left: 0; right: 0;
+            height: 20px; background: #ff5252; transform: translateY(-50%);
+        }
+        .click-text {
+            margin-top: 30px;
+            color: white; font-size: 1.2rem; letter-spacing: 2px;
+            animation: blink 1.5s infinite;
+        }
+
+        /* --- 6. THE BOOK REVEAL --- */
         #book-layer {
             display: none; /* Hidden Initially */
             position: relative; z-index: 30;
-            width: 90%; max-width: 700px;
+            width: 90%; max-width: 750px;
             perspective: 1500px;
         }
+
         .book {
-            display: flex; background: #fff;
-            border-radius: 10px; overflow: hidden;
-            box-shadow: 0 0 30px rgba(255, 64, 129, 0.4);
-            animation: openBook 1s forwards;
-            min-height: 400px;
+            display: flex;
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(255, 0, 127, 0.5); /* Pink Glow Shadow */
+            animation: openBook 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-height: 450px;
         }
+
         .left-page {
-            flex: 1; background: #fff0f5;
-            padding: 20px; text-align: center;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border-right: 2px dashed #ffc1e3;
+            flex: 1; background: #fff0f5; /* Light Pink Page */
+            padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-right: 2px dashed #ff80ab;
         }
+
         .right-page {
             flex: 1; background: #fff;
-            padding: 30px; text-align: center;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 30px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+            position: relative;
         }
-        
+
         .polaroid {
-            background: white; padding: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transform: rotate(-3deg); width: 100%; max-width: 200px;
-            margin-bottom: 10px;
+            background: white; padding: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: rotate(-3deg);
+            width: 85%;
+            margin-bottom: 15px;
         }
         .polaroid img { width: 100%; border-radius: 4px; }
 
-        /* Responsive */
+        .wish-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem; color: #ff007f;
+            margin-bottom: 15px;
+        }
+        .wish-body {
+            color: #555; font-size: 1.1rem; line-height: 1.6;
+            font-family: 'Quicksand', sans-serif;
+        }
+        
+        /* Mobile Stack */
         @media (max-width: 600px) {
-            .book { flex-direction: column; }
-            .left-page { border-right: none; border-bottom: 2px dashed #eee; }
-            .neon-text { font-size: 2.2rem; }
+            .book { flex-direction: column; min-height: auto; }
+            .left-page { border-right: none; border-bottom: 2px dashed #ff80ab; padding: 30px 20px; }
+            .neon-text { font-size: 2.5rem; }
+            .name-highlight { font-size: 3rem; }
         }
 
-        /* Music Btn */
-        .music-btn {
+        /* Music Button */
+        .music-control {
             position: fixed; top: 20px; right: 20px; z-index: 100;
-            font-size: 1.5rem; cursor: pointer; opacity: 0.8;
-            animation: spin 4s linear infinite;
+            font-size: 2rem; cursor: pointer;
+            filter: drop-shadow(0 0 5px #ff007f);
+            animation: spin 5s linear infinite;
         }
 
         /* Animations */
-        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
-        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(15px); } }
-        @keyframes openBook { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes zoomIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes openBook { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
 
     <canvas id="matrix"></canvas>
 
-    <div id="loading-screen">
-        <div class="matrix-text" id="countdown">3</div>
-        <div class="neon-text" id="birthday-text">
-            HAPPY<br>BIRTHDAY<br>TO YOU<br>KHONA ❤️
+    <div id="loading-layer">
+        <div class="count-number" id="countdown">3</div>
+    </div>
+
+    <div id="title-layer">
+        <div class="neon-text">
+            Happy Birthday<br>To You<br>
+            <span class="name-highlight">Khona ❤️</span>
         </div>
     </div>
 
-    <div id="interaction-layer">
-        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-sticker">
-        <div class="hand-pointer" id="hand-btn">👆</div>
-        <p style="margin-top:10px; color:white;">Tap to Open</p>
+    <div id="gift-layer">
+        <div class="gift-box-container" id="gift-btn">
+            <div class="gift-box">
+                <div class="ribbon-v"></div>
+                <div class="ribbon-h"></div>
+            </div>
+        </div>
+        <div class="click-text">Tap to start magic ✨</div>
     </div>
 
     <div id="book-layer">
-        <div class
+        <div class="book">
+            <div class="left-page">
+                <h2 style="font-family:'Dancing Script'; color:#ff007f; font-size:1.8rem;">Beautiful Moments</h2>
+                <div class="polaroid">
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Memory">
+                </div>
+                <div style="background:#ff007f; color:white; padding:5px 15px; border-radius:15px; font-size:0.8rem; margin-top:5px;">
+                    October 21, 2026
+                </div>
+            </div>
 
+            <div class="right-page">
+                <div class="wish-title">Happy Birthday!</div>
+                <p class="wish-body">
+                    Dear <b>Khona</b>,<br><br>
+                    May your day be filled with endless joy, sweet surprises, and magical moments. You deserve all the happiness in the world!
+                    <br><br>
+                    Keep Shining! ✨
+                </p>
+                <div style="font-size: 2rem; margin-top: 15px;">🎂🎁🎈</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="music-control" id="music-btn">🎵</div>
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
+    </audio>
+
+    <script>
+        // Use DOMContentLoaded to prevent "Stuck at 3"
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. SETUP ---
+            const countdownEl = document.getElementById('countdown');
+            const loadingLayer = document.getElementById('loading-layer');
+            const titleLayer = document.getElementById('title-layer');
+            const giftLayer = document.getElementById('gift-layer');
+            const bookLayer = document.getElementById('book-layer');
+            const giftBtn = document.getElementById('gift-btn');
+            const musicBtn = document.getElementById('music-btn');
+            const audio = document.getElementById('bg-music');
+
+            // --- 2. MATRIX RAIN (Pink Theme) ---
+            const canvas = document.getElementById('matrix');
+            const ctx = canvas.getContext('2d');
+            
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resize); resize();
+
+            const chars = "KHONA❤️BDAY";
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.font = fontSize + 'px monospace';
+                
+                for(let i=0; i<drops.length; i++) {
+                    const text = chars[Math.floor(Math.random()*chars.length)];
+                    // Mix of Pink, Hot Pink, and White
+                    const colors = ['#ff007f', '#ff80ab', '#ffffff'];
+                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }
+            setInterval(draw, 50);
+
+            // --- 3. COUNTDOWN LOGIC ---
+            let count = 3;
+            const timer = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    countdownEl.innerText = count;
+                } else {
+                    clearInterval(timer);
+                    // Step 1: Hide Countdown
+                    loadingLayer.style.display = 'none';
+                    
+                    // Step 2: Show Title (Neon Text)
+                    titleLayer.style.display = 'flex';
+                    
+                    // Step 3: Wait 3 seconds, then show Gift
+                    setTimeout(() => {
+                        titleLayer.style.opacity = '0'; // Fade out title
+                        setTimeout(() => {
+                            titleLayer.style.display = 'none';
+                            giftLayer.style.display = 'flex'; // Show Gift
+                        }, 500);
+                    }, 3000);
+                }
+            }, 1000);
+
+            // --- 4. INTERACTION ---
+            giftBtn.addEventListener('click', () => {
+                // Play Audio
+                audio.play().catch(e => console.log("Audio blocked"));
+                
+                // Hide Gift
+                giftLayer.style.opacity = '0';
+                setTimeout(() => {
+                    giftLayer.style.display = 'none';
+                    
+                    // Show Book
+                    bookLayer.style.display = 'block';
+                }, 500);
+            });
+
+            // Music Toggle
+            musicBtn.addEventListener('click', () => {
+                if(audio.paused) audio.play();
+                else audio.pause();
+            });
+
+        });
+    </script>
+</body>
+</html>
