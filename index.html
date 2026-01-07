@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday Khona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Basic Setup --- */
+        /* --- 1. Global Reset & Body --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: #000;
+            background-color: #050505; /* Deep Black */
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
             height: 100vh;
@@ -17,135 +17,120 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
             flex-direction: column;
+            color: white;
         }
 
-        /* --- 2. Background Rain --- */
-        canvas {
-            position: fixed;
-            top: 0; left: 0;
-            z-index: 0;
-            opacity: 0.3; 
+        /* --- 2. Canvas Layers --- */
+        #rain-canvas {
+            position: fixed; top: 0; left: 0; z-index: 0; opacity: 0.2;
+        }
+        #fireworks-canvas {
+            position: fixed; top: 0; left: 0; z-index: 99; pointer-events: none;
         }
 
         /* --- 3. Countdown Layer --- */
         #countdown-layer {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            z-index: 2000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
         }
         .count-number {
             font-size: 15vw;
-            color: #ff4081;
             font-weight: bold;
-            animation: pop 0.8s infinite;
+            background: linear-gradient(45deg, #ff4081, #ff80ab);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 64, 129, 0.5);
+            animation: pulse 0.8s infinite;
         }
 
         /* --- 4. Gift Box Layer --- */
         #gift-layer {
-            display: none; 
-            position: relative;
-            z-index: 10;
-            text-align: center;
-            cursor: pointer;
-            width: 100%;
+            display: none; position: relative; z-index: 10;
+            text-align: center; cursor: pointer; width: 100%;
         }
         .gift-emoji {
-            font-size: 25vw;
-            max-font-size: 120px;
-            animation: bounce 2s infinite;
-            filter: drop-shadow(0 0 20px #ff4081);
+            font-size: 20vw; max-font-size: 120px;
+            filter: drop-shadow(0 0 25px rgba(255, 64, 129, 0.6));
+            animation: float 2s ease-in-out infinite;
+            transition: transform 0.2s;
         }
+        .gift-emoji:active { transform: scale(0.9); }
         .tap-text {
-            margin-top: 10px;
-            font-size: 1.2rem;
-            animation: blink 1.5s infinite;
+            margin-top: 15px; font-size: 1.2rem; letter-spacing: 2px;
+            color: rgba(255,255,255,0.8); animation: blink 1.5s infinite;
         }
 
-        /* --- 5. Content Card (Wish) --- */
+        /* --- 5. Content Card (Glassmorphism) --- */
         #content-layer {
-            display: none; 
-            position: relative;
-            z-index: 20;
+            display: none; position: relative; z-index: 20;
             text-align: center;
-            width: 85%;
-            max-width: 350px;
-            background: rgba(20, 20, 20, 0.9);
-            padding: 25px;
-            border-radius: 20px;
-            border: 2px solid #ff4081;
-            box-shadow: 0 0 30px rgba(255, 64, 129, 0.4);
-            animation: zoomIn 0.5s ease-out;
-            backdrop-filter: blur(5px);
+            width: 85%; max-width: 380px;
+            /* Glass Effect */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 30px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 64, 129, 0.3);
+            box-shadow: 0 0 40px rgba(255, 64, 129, 0.2);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         h1 {
-            font-family: 'Pacifico', cursive;
-            font-size: 2rem;
-            color: #ff4081;
-            margin-bottom: 10px;
-            line-height: 1.3;
-            text-shadow: 0 0 10px #ff4081;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem; color: #ff4081;
+            margin-bottom: 5px; line-height: 1.2;
+            text-shadow: 0 0 15px rgba(255, 64, 129, 0.6);
         }
-
+        .date-badge {
+            display: inline-block;
+            background: rgba(255, 64, 129, 0.2);
+            padding: 5px 15px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: bold; color: #ff80ab;
+            margin-bottom: 15px; border: 1px solid rgba(255, 64, 129, 0.3);
+        }
         .cat-img {
-            width: 100%;
-            border-radius: 10px;
-            margin: 10px 0;
-            border: 2px solid #fff;
+            width: 100%; border-radius: 15px; margin: 10px 0;
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
-        /* Social Buttons */
+        /* Buttons */
         .social-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
+            display: flex; gap: 12px; justify-content: center; margin-top: 20px;
         }
         .btn {
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            text-decoration: none; padding: 10px 18px; border-radius: 50px;
+            font-size: 0.85rem; color: white; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .btn-insta { background: linear-gradient(45deg, #f09433, #bc1888); }
-        .btn-tiktok { background: #000; border: 1px solid #333; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-insta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .btn-tiktok { background: #000; border: 1px solid #444; }
 
         /* Footer */
         .credit {
-            position: fixed;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.7rem;
-            color: #666;
-            z-index: 5;
-            font-family: monospace;
+            position: fixed; bottom: 15px; width: 100%; text-align: center;
+            font-size: 0.75rem; color: rgba(255,255,255,0.4); z-index: 5;
+            font-family: monospace; letter-spacing: 1px;
         }
-        .credit span { color: #ff4081; }
+        .credit span { color: #ff4081; font-weight: bold; }
 
         /* Animations */
-        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     </style>
 </head>
 <body>
 
     <canvas id="rain-canvas"></canvas>
+    <canvas id="fireworks-canvas"></canvas>
 
     <audio id="bg-music" loop>
         <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
@@ -161,25 +146,30 @@
     </div>
 
     <div id="content-layer">
-        <h1>Happy Birthday to you<br>Khona 🥰</h1>
+        <h1>Happy Birthday<br>Khona 🥰</h1>
+        <div class="date-badge">October 21, 2026</div>
         
         <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Cute Cat" class="cat-img">
         
-        <p>Wishing you a magical day! ✨</p>
+        <p style="color:#eee; font-size:0.95rem;">Wishing you a magical day filled with love! ✨</p>
 
         <div class="social-buttons">
-            <a href="https://www.instagram.com/khona2025" target="_blank" class="btn btn-insta">📸 Insta</a>
-            <a href="https://www.tiktok.com/@khona513" target="_blank" class="btn btn-tiktok">🎵 TikTok</a>
+            <a href="https://www.instagram.com/khona2025" target="_blank" class="btn btn-insta">
+                📸 Instagram
+            </a>
+            <a href="https://www.tiktok.com/@khona513" target="_blank" class="btn btn-tiktok">
+                🎵 TikTok
+            </a>
         </div>
     </div>
 
     <div class="credit">This code made by <span>Nihan</span></div>
 
     <script>
-        // Ensure the script runs ONLY after the page is fully loaded
+        // Use 'load' to ensure everything is ready before starting logic
         window.addEventListener('load', function() {
             
-            // --- 1. Rain Effect ---
+            // --- 1. Matrix Rain ---
             const canvas = document.getElementById('rain-canvas');
             const ctx = canvas.getContext('2d');
             
@@ -188,21 +178,22 @@
                 canvas.height = window.innerHeight;
             }
             window.addEventListener('resize', resize);
-            resize(); // Initial call
+            resize();
 
-            const chars = "HAPPY BIRTHDAY KHONA ❤️";
+            const chars = "KHONA❤️BDAY🎂2026✨";
             const fontSize = 14;
             const columns = canvas.width / fontSize;
             const drops = Array(Math.floor(columns)).fill(1);
 
             function drawRain() {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillStyle = 'rgba(5, 5, 5, 0.1)'; // Fade effect
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#ff4081'; 
                 ctx.font = fontSize + 'px arial';
 
                 for(let i=0; i<drops.length; i++) {
                     const text = chars[Math.floor(Math.random()*chars.length)];
+                    // Random Pink & White colors
+                    ctx.fillStyle = Math.random() > 0.8 ? '#fff' : '#ff4081'; 
                     ctx.fillText(text, i*fontSize, drops[i]*fontSize);
                     if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
                     drops[i]++;
@@ -210,7 +201,57 @@
             }
             setInterval(drawRain, 50);
 
-            // --- 2. Logic Flow ---
+            // --- 2. Fireworks Effect (New) ---
+            const fwCanvas = document.getElementById('fireworks-canvas');
+            const fwCtx = fwCanvas.getContext('2d');
+            let particles = [];
+            
+            function resizeFW() {
+                fwCanvas.width = window.innerWidth;
+                fwCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeFW);
+            resizeFW();
+
+            function createFirework(x, y) {
+                const colors = ['#ff4081', '#18ffff', '#ffeb3b', '#ffffff'];
+                for(let i=0; i<30; i++) {
+                    particles.push({
+                        x: x, y: y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        life: 100,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        size: Math.random() * 3 + 1
+                    });
+                }
+            }
+
+            function updateFireworks() {
+                fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+                for(let i=0; i<particles.length; i++) {
+                    let p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.05; // gravity
+                    p.life--;
+                    p.size *= 0.96; // shrink
+                    
+                    fwCtx.fillStyle = p.color;
+                    fwCtx.beginPath();
+                    fwCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                    fwCtx.fill();
+
+                    if(p.life <= 0 || p.size < 0.1) {
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+                requestAnimationFrame(updateFireworks);
+            }
+            updateFireworks(); // Start Loop
+
+            // --- 3. Main Logic ---
             const countDisplay = document.getElementById('count-display');
             const countLayer = document.getElementById('countdown-layer');
             const giftLayer = document.getElementById('gift-layer');
@@ -219,5 +260,35 @@
 
             let currentCount = 3;
 
-            //
-        
+            // Robust Countdown
+            const countdownInterval = setInterval(() => {
+                currentCount--;
+                if (currentCount > 0) {
+                    countDisplay.innerText = currentCount;
+                } else {
+                    clearInterval(countdownInterval);
+                    countLayer.style.display = 'none';
+                    giftLayer.style.display = 'block';
+                }
+            }, 1000);
+
+            // Global Open Function
+            window.openGift = function() {
+                // Play Audio
+                audio.play().catch(e => console.log("Audio needs interaction"));
+                
+                // Hide Gift
+                giftLayer.style.display = 'none';
+                
+                // Trigger Fireworks from center
+                createFirework(window.innerWidth/2, window.innerHeight/2);
+                
+                // Show Content with delay for smooth effect
+                setTimeout(() => {
+                    contentLayer.style.display = 'block';
+                }, 100);
+            };
+        });
+    </script>
+</body>
+</html>
