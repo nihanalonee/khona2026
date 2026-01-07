@@ -92,3 +92,332 @@
             border-right: 160px solid transparent;
             border-bottom: 110px solid #d81b60;
             border-left: 160px solid #d81b60;
+            border-bottom-left-radius: 10px;
+            z-index: 3;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-top: 110px solid transparent;
+            border-right: 160px solid #c2185b;
+            border-bottom: 110px solid #c2185b;
+            border-left: 160px solid transparent;
+            border-bottom-right-radius: 10px;
+            z-index: 3;
+        }
+
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-top: 110px solid #ff80ab;
+            border-right: 160px solid transparent;
+            border-bottom: 110px solid transparent;
+            border-left: 160px solid transparent;
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out, z-index 0.2s;
+            z-index: 4;
+        }
+
+        /* --- The Card Inside --- */
+        .card {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            height: 180px;
+            background: #fff;
+            border-radius: 10px;
+            transition: bottom 0.6s ease-in-out, height 0.6s ease-in-out;
+            z-index: 2;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+
+        .envelope-wrapper.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope-wrapper.open .card {
+            bottom: 100px;
+            height: 450px;
+            z-index: 5;
+        }
+
+        .card h2 {
+            font-family: 'Pacifico', cursive;
+            color: #d81b60;
+            margin: 5px 0 0 0;
+            font-size: 2rem;
+        }
+        
+        .date-text {
+            color: #ff4081;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .cat-gif {
+            width: 130px;
+            border-radius: 10px;
+            margin: 8px 0;
+            border: 2px solid #ffeebb;
+        }
+
+        .message {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        /* Social Buttons */
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-insta {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
+            box-shadow: 0 4px 12px rgba(220, 39, 67, 0.4);
+        }
+
+        .btn-tiktok {
+            background: #000;
+            border: 1px solid #333;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: -50px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            animation: bounce 1.5s infinite;
+        }
+
+        /* Footer Credit */
+        .footer-credit {
+            position: fixed;
+            bottom: 15px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Share Tech Mono', monospace;
+            z-index: 50;
+            letter-spacing: 1px;
+        }
+        
+        .footer-credit span {
+            color: #ff4081;
+            font-weight: bold;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="rain-canvas"></canvas>
+    <canvas id="confetti-canvas"></canvas>
+
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
+    </audio>
+
+    <div id="countdown-screen">
+        <div class="count-number" id="timer">3</div>
+    </div>
+
+    <div class="envelope-wrapper" id="envelope" onclick="openGift()">
+        <div class="envelope">
+            <div class="flap"></div>
+            
+            <div class="card">
+                <h2>Happy Birthday</h2>
+                <strong style="color: #ff4081; font-size: 1.5rem;">Khona</strong>
+                <div class="date-text">October 21, 2026</div>
+                
+                <img src="https://media.giphy.com/media/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Cute Cat" class="cat-gif">
+                
+                <p class="message">Wishing you a day filled with<br>love & magic! ❤️✨</p>
+                
+                <div class="social-buttons">
+                    <a href="https://www.instagram.com/khona2025" target="_blank" class="btn btn-insta">
+                        📸 Instagram
+                    </a>
+                    <a href="https://www.tiktok.com/@khona513" target="_blank" class="btn btn-tiktok">
+                        🎵 TikTok
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="click-hint">Tap to Open 🎁</div>
+    </div>
+
+    <div class="footer-credit">
+        This code made by <span>Nihan</span>
+    </div>
+
+    <script>
+        // Matrix Rain
+        const rainCanvas = document.getElementById('rain-canvas');
+        const rCtx = rainCanvas.getContext('2d');
+
+        function resizeRain() {
+            rainCanvas.width = window.innerWidth;
+            rainCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeRain);
+        resizeRain();
+
+        const rainText = ["KHONA", "❤️", "BDAY", "🎂", "2026", "✨", "OCT 21"];
+        const fontSize = 18;
+        const columns = rainCanvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawRain() {
+            rCtx.fillStyle = 'rgba(0, 0, 0, 0.08)'; 
+            rCtx.fillRect(0, 0, rainCanvas.width, rainCanvas.height);
+            rCtx.font = fontSize + 'px arial';
+
+            for(let i=0; i<drops.length; i++) {
+                const text = rainText[Math.floor(Math.random() * rainText.length)];
+                rCtx.fillStyle = Math.random() > 0.8 ? '#fff' : '#ff4081'; 
+                rCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if(drops[i] * fontSize > rainCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawRain, 40);
+
+        // Confetti
+        const confCanvas = document.getElementById('confetti-canvas');
+        const cCtx = confCanvas.getContext('2d');
+        confCanvas.width = window.innerWidth;
+        confCanvas.height = window.innerHeight;
+
+        let particles = [];
+        const colors = ['#ff4081', '#00bcd4', '#ffeb3b', '#ffffff', '#76ff03'];
+
+        function createConfetti() {
+            for(let i=0; i<150; i++) {
+                particles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2 + 100,
+                    vx: (Math.random() - 0.5) * 20,
+                    vy: (Math.random() - 2) * 15,
+                    size: Math.random() * 8 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 100,
+                    gravity: 0.5
+                });
+            }
+        }
+
+        function drawConfetti() {
+            cCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+            for(let i=0; i<particles.length; i++) {
+                let p = particles[i];
+                cCtx.fillStyle = p.color;
+                cCtx.beginPath();
+                cCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                cCtx.fill();
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.life--;
+
+                if(p.life <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(drawConfetti);
+        }
+        drawConfetti(); 
+
+        // Interaction
+        const timerEl = document.getElementById('timer');
+        const countdownScreen = document.getElementById('countdown-screen');
+        const envelope = document.getElementById('envelope');
+        const audio = document.getElementById('bg-music');
+        
+        let count = 3;
+        const cInterval = setInterval(() => {
+            count--;
+            if(count > 0) {
+                timerEl.innerText = count;
+            } else {
+                clearInterval(cInterval);
+                countdownScreen.style.display = 'none';
+                envelope.style.display = 'block';
+            }
+        }, 1000);
+
+        function openGift() {
+            const wrapper = document.getElementById('envelope');
+            
+            if(!wrapper.classList.contains('open')) {
+                wrapper.classList.add('open');
+                document.querySelector('.click-hint').style.display = 'none';
+                
+                // Play new audio
+                audio.play().catch(e => console.log("Audio needs interaction"));
+                createConfetti(); 
+            }
+        }
+    </script>
+</body>
+</html>
