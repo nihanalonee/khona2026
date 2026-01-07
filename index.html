@@ -4,259 +4,224 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday Khona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <style>
+        /* --- 1. Basic Setup --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background-color: #000;
-            overflow: hidden;
+            overflow: hidden; /* No scrolling */
             font-family: 'Poppins', sans-serif;
             height: 100vh;
             width: 100vw;
-            touch-action: none; /* Important for mobile */
-        }
-
-        /* --- Orientation Warning (Portrait) --- */
-        #rotate-warning {
             display: flex;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 9999;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+            color: white;
+            flex-direction: column;
+        }
+
+        /* --- 2. Background Rain --- */
+        canvas {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 0;
+            opacity: 0.3; 
+        }
+
+        /* --- 3. Countdown Layer --- */
+        #countdown-layer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .count-number {
+            font-size: 15vw; /* Responsive font size */
             color: #ff4081;
-            text-align: center;
-        }
-        #rotate-warning svg {
-            width: 80px; fill: #ff4081; margin-bottom: 20px;
-            animation: rotatePhone 2s infinite ease-in-out;
+            font-weight: bold;
+            animation: pop 0.8s infinite;
         }
 
-        /* --- Main Content (Landscape) --- */
-        #main-container {
-            display: none;
-            position: relative; z-index: 10;
-            height: 100%; width: 100%;
-        }
-        #rain-canvas {
-            display: none; position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.3;
-        }
-
-        /* Landscape Logic */
-        @media screen and (orientation: landscape) {
-            #rotate-warning { display: none; }
-            #main-container { display: block; }
-            #rain-canvas { display: block; }
-        }
-
-        /* --- States --- */
-        /* 1. Gift Box */
-        #gift-container {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+        /* --- 4. Gift Box Layer --- */
+        #gift-layer {
+            display: none; 
+            position: relative;
+            z-index: 10;
             text-align: center;
             cursor: pointer;
-            z-index: 20;
+            width: 100%;
         }
         .gift-emoji {
-            font-size: 90px;
+            font-size: 25vw; /* Responsive size based on screen width */
+            max-font-size: 120px;
             animation: bounce 2s infinite;
-            filter: drop-shadow(0 0 15px #ff4081);
+            filter: drop-shadow(0 0 20px #ff4081);
         }
-        .tap-hint {
-            color: white; font-size: 1.2rem; margin-top: 10px;
-            animation: blink 1s infinite;
+        .tap-text {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            animation: blink 1.5s infinite;
         }
 
-        /* 2. Magic Wand Area */
-        #magic-area {
-            display: none;
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 30;
-        }
-        #wand {
-            position: absolute;
-            font-size: 50px;
-            pointer-events: none;
-            z-index: 40;
-            transform: rotate(-10deg);
-            filter: drop-shadow(0 0 10px #d500f9);
+        /* --- 5. Content Card (Wish) --- */
+        #content-layer {
             display: none; 
-        }
-        .instruction {
-            position: absolute; bottom: 20px; width: 100%;
-            text-align: center; color: rgba(255,255,255,0.7);
-            font-size: 1rem; pointer-events: none;
-        }
-
-        /* 3. Final Reveal */
-        #final-message {
-            display: none;
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            position: relative;
+            z-index: 20;
             text-align: center;
-            width: 80%;
-            z-index: 50;
+            width: 85%; /* Fits any mobile screen */
+            max-width: 350px; /* Won't get too big on PC */
+            background: rgba(20, 20, 20, 0.8);
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid #ff4081;
+            box-shadow: 0 0 30px rgba(255, 64, 129, 0.4);
+            animation: zoomIn 0.5s ease-out;
+            backdrop-filter: blur(5px);
         }
+
         h1 {
-            font-family: 'Dancing Script', cursive;
-            font-size: 3.5rem;
+            font-family: 'Pacifico', cursive;
+            font-size: 2rem;
             color: #ff4081;
-            text-shadow: 0 0 20px #d500f9;
-            margin-bottom: 15px;
-            animation: zoomIn 1s ease-out;
+            margin-bottom: 10px;
+            line-height: 1.3;
+            text-shadow: 0 0 10px #ff4081;
         }
+
         .cat-img {
-            width: 180px; border-radius: 15px;
-            box-shadow: 0 0 25px rgba(255,64,129,0.6);
-            animation: fadeIn 2s;
+            width: 100%;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 2px solid #fff;
         }
 
-        /* Effects */
-        .particle {
-            position: absolute; font-size: 20px; pointer-events: none;
-            animation: fadeUp 1s forwards;
+        /* Social Buttons */
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
         }
+        .btn {
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-insta { background: linear-gradient(45deg, #f09433, #bc1888); }
+        .btn-tiktok { background: #000; border: 1px solid #333; }
 
-        @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
-        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        @keyframes blink { 50% { opacity: 0.5; } }
-        @keyframes zoomIn { from { transform: scale(0); } to { transform: scale(1); } }
-        @keyframes fadeUp { to { opacity: 0; transform: translateY(-30px) scale(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Footer */
+        .credit {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #666;
+            z-index: 5;
+            font-family: monospace;
+        }
+        .credit span { color: #ff4081; }
+
+        /* Animations */
+        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     </style>
 </head>
 <body>
 
-    <audio id="bg-music" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
-    </audio>
-
-    <div id="rotate-warning">
-        <svg viewBox="0 0 24 24"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.24-1.12l1.33 1.32-.66-.03C4.84 2.52 0 7.36 0 13.5c0 1.08.15 2.13.42 3.14L1.75 16c-.33-.83-.5-1.71-.5-2.5 0-4.77 3.87-8.63 8.63-8.63l-.64.03 3.8 3.8 1.31-1.32-6.11-6zM.42 7.36L1.75 8c.33.83.5 1.71.5 2.5 0 4.77 3.87 8.63 8.63 8.63l.64-.03-3.8-3.8-1.31 1.32 6.11 6 6.11-6-1.33-1.32.66.03c6.07.08 10.91-4.76 10.91-10.9 0-1.08-.15-2.13-.42-3.14L22.25 8c.33.83.5 1.71.5 2.5 0 4.77-3.87 8.63-8.63 8.63l.64-.03-3.8-3.8-1.31 1.32 6.11 6z"/></svg>
-        <h2>Rotate Phone</h2>
-    </div>
-
     <canvas id="rain-canvas"></canvas>
 
-    <div id="main-container">
-        <div id="gift-container">
-            <div class="gift-emoji">🎁</div>
-            <div class="tap-hint">Tap to Open</div>
-        </div>
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
+    </audio>
 
-        <div id="magic-area">
-            <div id="wand">🪄</div>
-            <div class="instruction">Rub screen or Tap anywhere! ✨</div>
-        </div>
+    <div id="countdown-layer">
+        <div class="count-number" id="count-display">3</div>
+    </div>
 
-        <div id="final-message">
-            <h1>Happy Birthday to you<br>Khona 🥰</h1>
-            <img src="https://media.giphy.com/media/LpDmM2wSt6Hm5fKJVa/giphy.gif" class="cat-img">
+    <div id="gift-layer" onclick="openGift()">
+        <div class="gift-emoji">🎁</div>
+        <div class="tap-text">Tap to Open</div>
+    </div>
+
+    <div id="content-layer">
+        <h1>Happy Birthday to you<br>Khona 🥰</h1>
+        
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Cute Cat" class="cat-img">
+        
+        <p>Wishing you a magical day! ✨</p>
+
+        <div class="social-buttons">
+            <a href="https://www.instagram.com/khona2025" target="_blank" class="btn btn-insta">📸 Insta</a>
+            <a href="https://www.tiktok.com/@khona513" target="_blank" class="btn btn-tiktok">🎵 TikTok</a>
         </div>
     </div>
 
+    <div class="credit">This code made by <span>Nihan</span></div>
+
     <script>
-        // --- Setup Canvas ---
+        // --- 1. Responsive Matrix Rain ---
         const canvas = document.getElementById('rain-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        
+        // Auto-resize canvas when screen size changes
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
         const chars = "HAPPY BIRTHDAY KHONA ❤️";
-        const drops = Array(Math.floor(canvas.width/20)).fill(1);
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
 
         function drawRain() {
-            ctx.fillStyle = 'rgba(0,0,0,0.1)';
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = '#ff4081';
-            ctx.font = '15px arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ff4081'; 
+            ctx.font = fontSize + 'px arial';
+
             for(let i=0; i<drops.length; i++) {
-                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*20, drops[i]*20);
-                if(drops[i]*20 > canvas.height && Math.random()>0.95) drops[i]=0;
+                const text = chars[Math.floor(Math.random()*chars.length)];
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
                 drops[i]++;
             }
         }
         setInterval(drawRain, 50);
 
-        // --- Logic ---
-        const giftBtn = document.getElementById('gift-container');
-        const magicArea = document.getElementById('magic-area');
-        const wand = document.getElementById('wand');
-        const finalMsg = document.getElementById('final-message');
+        // --- 2. Logic ---
+        const countDisplay = document.getElementById('count-display');
+        const countLayer = document.getElementById('countdown-layer');
+        const giftLayer = document.getElementById('gift-layer');
+        const contentLayer = document.getElementById('content-layer');
         const audio = document.getElementById('bg-music');
-        
-        let progress = 0;
-        let revealed = false;
 
-        // Start Function
-        function startExperience() {
-            giftBtn.style.display = 'none';
-            magicArea.style.display = 'block';
-            wand.style.display = 'block';
-            audio.play().catch(e=>console.log("Audio autoplay blocked"));
-        }
+        let count = 3;
 
-        // Add both Click and Touch event listeners to be safe
-        giftBtn.addEventListener('click', startExperience);
-        giftBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Prevent double firing
-            startExperience();
-        });
-
-        // Magic Effect Logic
-        function doMagic(x, y) {
-            if(revealed) return;
-
-            // Move Wand
-            wand.style.left = x + 'px';
-            wand.style.top = y + 'px';
-
-            // Create Particle
-            const p = document.createElement('div');
-            p.innerText = Math.random()>0.5 ? '✨' : '💖';
-            p.className = 'particle';
-            p.style.left = x + 'px';
-            p.style.top = y + 'px';
-            p.style.color = `hsl(${Math.random()*360}, 100%, 70%)`;
-            magicArea.appendChild(p);
-            setTimeout(() => p.remove(), 1000);
-
-            // Progress
-            progress += 2; // Faster progress
-            if(progress > 100) revealSurprise();
-        }
-
-        // Handle Mouse Move
-        document.addEventListener('mousemove', (e) => {
-            if(magicArea.style.display === 'block') doMagic(e.clientX, e.clientY);
-        });
-
-        // Handle Touch Move (Rubbing)
-        document.addEventListener('touchmove', (e) => {
-            if(magicArea.style.display === 'block') {
-                doMagic(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        }, {passive: true});
-
-        // Handle Click/Tap (Alternative to rubbing)
-        document.addEventListener('click', (e) => {
-            if(magicArea.style.display === 'block') {
-                doMagic(e.clientX, e.clientY);
-                progress += 5; // Tapping gives more progress
-            }
-        });
-
-        function revealSurprise() {
-            if(revealed) return;
-            revealed = true;
-            magicArea.style.display = 'none';
-            finalMsg.style.display = 'block';
-        }
-
-    </script>
-</body>
-</html>
+        // Countdown Logic
+        const timer = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countDisplay.innerText = count;
+            } else {
+                clearInterval(timer);
+                countLayer.style.display = 'none'; // Hide countdown
