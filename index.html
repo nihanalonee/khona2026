@@ -3,277 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nihan Programming - Advanced Ant System</title>
+    <title>Nihan Programming - Ultra Realism</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #f0f0f0;
-            font-family: 'Courier New', Courier, monospace;
+            background-color: #e8e8e8; /* Slight texture look */
+            background-image: radial-gradient(#d0d0d0 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Segoe UI', sans-serif;
         }
         canvas {
             display: block;
         }
-        /* UI Control Panel */
-        #controls {
+        #ui-layer {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border-left: 5px solid #362312;
-            user-select: none;
+            pointer-events: none; /* Let clicks pass through to canvas */
         }
-        .control-group {
-            margin-bottom: 10px;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: bold;
+        h1 {
+            margin: 0;
+            font-size: 24px;
             color: #333;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        input[type=range] {
-            width: 150px;
-        }
-        .status {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+        p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
         }
     </style>
 </head>
 <body>
 
-<div id="controls">
-    <h3>NIHAN SYSTEM</h3>
-    <div class="control-group">
-        <label>Colony Size: <span id="countVal">100</span></label>
-        <input type="range" id="antRange" min="20" max="300" value="100">
-    </div>
-    <div class="control-group">
-        <label>Speed Factor</label>
-        <input type="range" id="speedRange" min="1" max="5" step="0.1" value="2">
-    </div>
-    <div class="status">
-        Interaction: Mouse Move (Attract)<br>
-        Defense: Click (Scatter)
-    </div>
+<div id="ui-layer">
+    <h1>Nihan Bio-Sim v3.0</h1>
+    <p>System: Tripod Gait & Idle Behavior Active</p>
+    <p>Interaction: Mouse to Attract | Click to Scare</p>
 </div>
 
-<canvas id="antCanvas"></canvas>
+<canvas id="simCanvas"></canvas>
 
 <script>
-    const canvas = document.getElementById('antCanvas');
+    const canvas = document.getElementById('simCanvas');
     const ctx = canvas.getContext('2d');
 
-    let width, height;
+    let w, h;
+    const ants = [];
+    const ANT_COUNT = 80; // Fewer ants, but higher quality
     
-    // Mouse Interaction Object
-    const mouse = { x: -1000, y: -1000, active: false };
+    // Mouse state
+    const mouse = { x: -9999, y: -9999, click: false };
 
-    // System Variables
-    let ants = [];
-    let antCount = 100;
-    let globalSpeed = 2;
-    let panicMode = false;
-
-    // Resize Handler
+    // Resize setup
     function resize() {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = w;
+        canvas.height = h;
     }
     window.addEventListener('resize', resize);
     resize();
 
-    // Mouse Listeners
-    window.addEventListener('mousemove', (e) => {
+    // Input listeners
+    window.addEventListener('mousemove', e => {
         mouse.x = e.clientX;
         mouse.y = e.clientY;
-        mouse.active = true;
     });
-
     window.addEventListener('mousedown', () => {
-        panicMode = true;
-        setTimeout(() => { panicMode = false; }, 800); // Panic lasts 0.8 seconds
+        mouse.click = true;
+        setTimeout(() => mouse.click = false, 500);
     });
 
-    // UI Listeners
-    const antRange = document.getElementById('antRange');
-    const speedRange = document.getElementById('speedRange');
-    const countVal = document.getElementById('countVal');
+    // --- UTILITIES ---
+    const random = (min, max) => Math.random() * (max - min) + min;
 
-    antRange.addEventListener('input', (e) => {
-        antCount = parseInt(e.target.value);
-        countVal.innerText = antCount;
-        initAnts();
-    });
-
-    speedRange.addEventListener('input', (e) => {
-        globalSpeed = parseFloat(e.target.value);
-    });
-
-    // --- The Advanced Ant Class ---
+    // --- THE BIOLOGICAL ANT CLASS ---
     class Ant {
         constructor() {
-            this.reset();
+            this.init();
         }
 
-        reset() {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            this.angle = Math.random() * Math.PI * 2;
-            this.size = Math.random() * 0.4 + 0.6; // Scale
-            this.baseSpeed = Math.random() * 0.5 + 0.5;
-            this.walkCycle = Math.random() * 10; // For leg animation
-            this.turnSpeed = 0.1;
+        init() {
+            this.x = random(0, w);
+            this.y = random(0, h);
+            this.angle = random(0, Math.PI * 2);
+            this.targetAngle = this.angle;
+            this.size = random(0.8, 1.2); // Size variation
+            
+            // Movement Physics
+            this.speed = 0;
+            this.maxSpeed = random(1.5, 2.5);
+            this.acceleration = 0.05;
+            
+            // State Machine: 'WALK' or 'IDLE'
+            this.state = 'WALK';
+            this.stateTimer = random(100, 500);
+
+            // Animation Properties
+            this.walkCycle = 0;
+            this.antennaOffset = 0;
         }
 
         update() {
-            let targetAngle = this.angle;
-            let speedMultiplier = 1;
-
-            // 1. Interaction Logic (Mouse)
-            if (mouse.active) {
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-
-                if (panicMode && dist < 300) {
-                    // SCATTER: Run away from mouse
-                    targetAngle = Math.atan2(dy, dx) + Math.PI; // Opposite direction
-                    speedMultiplier = 4; // Run fast
-                    this.turnSpeed = 0.5;
-                } 
-                else if (dist < 400 && !panicMode) {
-                    // ATTRACT: Swarm towards mouse (with some randomness)
-                    targetAngle = Math.atan2(dy, dx);
-                    speedMultiplier = 1.5;
-                    this.turnSpeed = 0.15;
+            // 1. State Management (Stop and Go behavior)
+            this.stateTimer--;
+            if (this.stateTimer <= 0) {
+                if (this.state === 'WALK') {
+                    // Switch to IDLE (Stop to look around)
+                    this.state = 'IDLE';
+                    this.stateTimer = random(50, 150);
+                    this.speed = 0; // Immediate stop mechanism
+                } else {
+                    // Switch to WALK
+                    this.state = 'WALK';
+                    this.stateTimer = random(200, 600);
                 }
             }
 
-            // 2. Smooth Steering (Turn towards target)
-            // Determine the shortest rotation direction
-            let diff = targetAngle - this.angle;
-            while (diff < -Math.PI) diff += Math.PI * 2;
-            while (diff > Math.PI) diff -= Math.PI * 2;
-            
-            // Add randomness (Ants are jittery)
-            diff += (Math.random() - 0.5) * 0.5; 
+            // 2. Interaction Logic
+            let dx = mouse.x - this.x;
+            let dy = mouse.y - this.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            let fearFactor = false;
 
-            this.angle += diff * this.turnSpeed;
+            if (mouse.click && dist < 300) fearFactor = true; // Panic mode
 
-            // 3. Move
-            const currentSpeed = this.baseSpeed * globalSpeed * speedMultiplier;
-            this.x += Math.cos(this.angle) * currentSpeed;
-            this.y += Math.sin(this.angle) * currentSpeed;
+            if (fearFactor) {
+                // Run away fast
+                this.state = 'WALK'; // Force walk
+                this.targetAngle = Math.atan2(dy, dx) + Math.PI;
+                this.speed = this.maxSpeed * 2.5;
+            } else if (dist < 200 && this.state === 'WALK') {
+                // Attract to mouse
+                this.targetAngle = Math.atan2(dy, dx);
+            } else if (this.state === 'WALK') {
+                // Random wandering wiggle
+                if (Math.random() < 0.05) {
+                    this.targetAngle += random(-1, 1);
+                }
+            }
 
-            // 4. Update Walk Cycle (Leg animation speed depends on movement speed)
-            this.walkCycle += currentSpeed * 0.5;
+            // 3. Physics & Smooth Rotation
+            if (this.state === 'WALK' || fearFactor) {
+                // Smooth acceleration
+                if (this.speed < this.maxSpeed) this.speed += this.acceleration;
+                
+                // Smooth rotation
+                let diff = this.targetAngle - this.angle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                this.angle += diff * 0.1;
 
-            // 5. Screen Wrapping
-            if (this.x < -20) this.x = width + 20;
-            if (this.x > width + 20) this.x = -20;
-            if (this.y < -20) this.y = height + 20;
-            if (this.y > height + 20) this.y = -20;
+                // Move
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+
+                // Animate Legs (Speed dependent)
+                this.walkCycle += this.speed * 0.2;
+            } else {
+                // Decelerate to 0
+                this.speed *= 0.8; 
+            }
+
+            // Antennae always twitch
+            this.antennaOffset += 0.5;
+
+            // Screen Wrap
+            if (this.x < -20) this.x = w + 20;
+            if (this.x > w + 20) this.x = -20;
+            if (this.y < -20) this.y = h + 20;
+            if (this.y > h + 20) this.y = -20;
         }
 
         draw() {
             ctx.save();
             ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle);
-
+            ctx.rotate(this.angle + Math.PI / 2); // Rotate to face up relative to calc
             const s = this.size;
-            ctx.fillStyle = "#362312";
-            ctx.strokeStyle = "#362312";
-            ctx.lineWidth = 0.5;
-            ctx.lineCap = "round";
 
-            // --- Animated Legs ---
-            // We use sin/cos of walkCycle to oscillate legs
-            const legOffset = Math.sin(this.walkCycle) * 0.2; 
-            const legOffset2 = Math.cos(this.walkCycle) * 0.2; 
-
-            const legLen = 4 * s;
-
-            // Leg Group 1 (Front-Right, Mid-Left, Back-Right)
-            this.drawLeg(1.5*s, 2*s, legLen, -0.5 + legOffset);  // Front R
-            this.drawLeg(-0.5*s, -2*s, legLen, 0 + legOffset);   // Mid L
-            this.drawLeg(-2.5*s, 2*s, legLen, 0.5 + legOffset);  // Back R
-
-            // Leg Group 2 (Front-Left, Mid-Right, Back-Left)
-            this.drawLeg(1.5*s, -2*s, legLen, -0.5 + legOffset2); // Front L
-            this.drawLeg(-0.5*s, 2*s, legLen, 0 + legOffset2);    // Mid R
-            this.drawLeg(-2.5*s, -2*s, legLen, 0.5 + legOffset2); // Back L
-
-            // --- Body Segments ---
+            // Shadow (Soft blur underneath)
+            ctx.fillStyle = "rgba(0,0,0,0.15)";
             ctx.beginPath();
-            ctx.arc(1.5 * s, 0, 0.9 * s, 0, Math.PI * 2); // Head
-            ctx.arc(-0.5 * s, 0, 0.8 * s, 0, Math.PI * 2); // Thorax
-            ctx.ellipse(-3 * s, 0, 1.8 * s, 1.3 * s, 0, 0, Math.PI * 2); // Abdomen
+            ctx.ellipse(0, 2*s, 3*s, 8*s, 0, 0, Math.PI*2);
             ctx.fill();
 
-            // Antennae
+            // --- LEGS (Tripod Gait) ---
+            // Real ants use tripod: Legs R1, L2, R3 move together, L1, R2, L3 support.
+            ctx.strokeStyle = "#2a1a0a";
+            ctx.lineWidth = 0.8 * s;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+
+            const walkVal = this.walkCycle;
+            
+            // Helper for jointed legs
+            const drawLeg = (side, yPos, length, phaseOffset) => {
+                // Calculate movement based on phase
+                const move = Math.sin(walkVal + phaseOffset) * (this.speed * 0.5);
+                
+                // Joint calculations (Femur & Tibia)
+                const startX = (side === 'left' ? -2 : 2) * s;
+                const elbowX = (side === 'left' ? -6 : 6) * s;
+                const footX  = (side === 'left' ? -9 : 9) * s;
+                
+                // Dynamic Y positions simulating stepping
+                const currentElbowY = yPos - Math.abs(move) * 2; // Knee goes up
+                const currentFootY = yPos + move * 4; // Foot moves forward/back
+
+                ctx.beginPath();
+                ctx.moveTo(startX, yPos);
+                ctx.lineTo(elbowX, currentElbowY); // Femur
+                ctx.lineTo(footX, currentFootY);   // Tibia
+                ctx.stroke();
+            };
+
+            // Right Side Legs
+            drawLeg('right', -4*s, 8, 0);       // R1 (Front)
+            drawLeg('right', 0, 8, Math.PI);    // R2 (Mid) - Opposite Phase
+            drawLeg('right', 4*s, 9, 0);        // R3 (Back)
+
+            // Left Side Legs
+            drawLeg('left', -4*s, 8, Math.PI);  // L1 (Front) - Opposite Phase
+            drawLeg('left', 0, 8, 0);           // L2 (Mid)
+            drawLeg('left', 4*s, 9, Math.PI);   // L3 (Back) - Opposite Phase
+
+            // --- BODY (Glossy Segments) ---
+            const grad = ctx.createRadialGradient(-2*s, -2*s, 0, 0, 0, 10*s);
+            grad.addColorStop(0, "#5e4b35"); // Highlight
+            grad.addColorStop(0.5, "#2a1a0a"); // Base
+            grad.addColorStop(1, "#0f0802"); // Shadow
+
+            ctx.fillStyle = grad;
+
+            // 1. Abdomen (Rear - Large)
             ctx.beginPath();
-            ctx.moveTo(2*s, 0.5*s); ctx.lineTo(4*s, 2*s);
-            ctx.moveTo(2*s, -0.5*s); ctx.lineTo(4*s, -2*s);
+            ctx.ellipse(0, 5*s, 3.5*s, 5*s, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            // 2. Thorax (Middle - Thin)
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 1.8*s, 2.5*s, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            // 3. Head (Front)
+            ctx.beginPath();
+            // Complex head shape
+            ctx.moveTo(0, -6*s);
+            ctx.bezierCurveTo(3*s, -6*s, 2.5*s, -2.5*s, 0, -2.5*s); // Right cheek
+            ctx.bezierCurveTo(-2.5*s, -2.5*s, -3*s, -6*s, 0, -6*s); // Left cheek
+            ctx.fill();
+
+            // --- DETAILS ---
+            
+            // Mandibles (Jaws)
+            ctx.strokeStyle = "#3e2b17";
+            ctx.lineWidth = 1 * s;
+            ctx.beginPath();
+            ctx.moveTo(1*s, -5.5*s);
+            ctx.quadraticCurveTo(2*s, -7.5*s, 0.5*s, -8*s); // Right Jaw
+            ctx.moveTo(-1*s, -5.5*s);
+            ctx.quadraticCurveTo(-2*s, -7.5*s, -0.5*s, -8*s); // Left Jaw
             ctx.stroke();
+
+            // Antennae (Twitching)
+            ctx.strokeStyle = "#2a1a0a";
+            ctx.lineWidth = 0.5 * s;
+            
+            // Random twitch calculation
+            const twitchL = Math.sin(this.antennaOffset * 0.8) * 0.2;
+            const twitchR = Math.sin(this.antennaOffset * 0.9 + 1) * 0.2;
+
+            ctx.beginPath();
+            // Left Antenna (elbow joint)
+            ctx.moveTo(-1.5*s, -5*s);
+            ctx.lineTo(-4*s, -7*s + twitchL); 
+            ctx.lineTo(-6*s, -5*s + twitchL * 5); 
+            ctx.stroke();
+
+            // Right Antenna
+            ctx.beginPath();
+            ctx.moveTo(1.5*s, -5*s);
+            ctx.lineTo(4*s, -7*s + twitchR);
+            ctx.lineTo(6*s, -5*s + twitchR * 5);
+            ctx.stroke();
+
+            // Eyes
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(-1.8*s, -5*s, 0.4*s, 0, Math.PI*2);
+            ctx.arc(1.8*s, -5*s, 0.4*s, 0, Math.PI*2);
+            ctx.fill();
 
             ctx.restore();
         }
-
-        drawLeg(x, y, len, angleOffset) {
-            // Helper to draw a jointed leg
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            
-            // Knee position
-            const kneeX = x + (y > 0 ? 2 : 2); 
-            const kneeY = y;
-            
-            ctx.lineTo(kneeX, kneeY);
-            
-            // Foot position (Adding movement)
-            const footX = kneeX + len * Math.cos(angleOffset);
-            const footY = kneeY + len * Math.sin(Math.PI/2 + angleOffset * (y>0?1:-1));
-            
-            ctx.lineTo(footX, footY);
-            ctx.stroke();
-        }
     }
 
-    // --- Initialization & Loop ---
-    function initAnts() {
-        ants = [];
-        for (let i = 0; i < antCount; i++) {
-            ants.push(new Ant());
-        }
-    }
-
-    function drawWatermark() {
-        ctx.save();
-        ctx.translate(width / 2, height / 2);
-        ctx.font = "900 70px Courier New";
-        ctx.fillStyle = "rgba(0, 0, 0, 0.04)"; 
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("NIHAN PROGRAMMING", 0, 0);
-        
-        ctx.font = "14px Courier New";
-        ctx.fillText("ADVANCED SIMULATION v2.0", 0, 50);
-        ctx.restore();
-    }
+    // --- MAIN LOOP ---
+    for(let i=0; i<ANT_COUNT; i++) ants.push(new Ant());
 
     function animate() {
-        ctx.clearRect(0, 0, width, height);
+        ctx.clearRect(0, 0, w, h);
         
-        drawWatermark();
+        // Draw Faint Watermark
+        ctx.save();
+        ctx.translate(w/2, h/2);
+        ctx.rotate(-Math.PI/12);
+        ctx.font = "bold 100px sans-serif";
+        ctx.fillStyle = "rgba(0,0,0,0.03)";
+        ctx.textAlign = "center";
+        ctx.fillText("NIHAN CODE", 0, 0);
+        ctx.restore();
 
+        // Update Ants
         ants.forEach(ant => {
             ant.update();
             ant.draw();
@@ -281,8 +326,6 @@
 
         requestAnimationFrame(animate);
     }
-
-    initAnts();
     animate();
 
 </script>
