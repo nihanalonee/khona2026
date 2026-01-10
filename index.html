@@ -2,343 +2,290 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy Birthday Khona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sacramento&family=Dancing+Script:wght@700&family=Quicksand:wght@500&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihan Programming - Advanced Ant System</title>
     <style>
-        /* --- 1. RESET & GLOBAL --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: #000;
+            margin: 0;
             overflow: hidden;
-            font-family: 'Quicksand', sans-serif;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
+            background-color: #f0f0f0;
+            font-family: 'Courier New', Courier, monospace;
         }
-
-        /* --- 2. MATRIX RAIN CANVAS --- */
         canvas {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            opacity: 0.6; /* Slight fade to make text pop */
-        }
-
-        /* --- 3. COUNTDOWN LAYER --- */
-        #loading-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10;
-            display: flex; justify-content: center; align-items: center;
-            flex-direction: column;
-            pointer-events: none;
-        }
-
-        .count-number {
-            font-family: monospace;
-            font-size: 8rem;
-            color: #fff;
-            text-shadow: 0 0 20px #ff007f; /* Neon Pink Glow */
-            animation: pulse 1s infinite;
-        }
-
-        /* --- 4. TITLE ANIMATION (Neon Text) --- */
-        #title-layer {
-            display: none; /* Hidden Initially */
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 15;
-            flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.7); /* Dim background */
-        }
-
-        .neon-text {
-            font-family: 'Sacramento', cursive;
-            font-size: 3.5rem;
-            color: #fff;
-            text-align: center;
-            line-height: 1.4;
-            /* The Exact Pink Neon Glow */
-            text-shadow: 
-                0 0 5px #ff007f,
-                0 0 10px #ff007f,
-                0 0 20px #ff007f,
-                0 0 40px #ff007f,
-                0 0 80px #ff007f;
-            animation: zoomIn 1.5s ease-out forwards;
-        }
-
-        .name-highlight {
-            color: #ff007f; /* Hot Pink */
-            font-size: 4rem;
             display: block;
-            margin-top: 10px;
         }
-
-        /* --- 5. GIFT BOX INTERACTION --- */
-        #gift-layer {
-            display: none; /* Hidden Initially */
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20;
-            flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.85); /* Darker background */
-            transition: opacity 1s;
+        /* UI Control Panel */
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-left: 5px solid #362312;
+            user-select: none;
         }
-
-        /* CSS 3D Gift Box */
-        .gift-box-container {
-            position: relative;
-            width: 120px; height: 120px;
-            cursor: pointer;
-            animation: bounce 2s infinite;
+        .control-group {
+            margin-bottom: 10px;
         }
-        .gift-box {
-            width: 100%; height: 100%;
-            background: linear-gradient(135deg, #2196f3, #1976d2); /* Blue Box like screenshot */
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(33, 150, 243, 0.6);
-            position: relative;
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
         }
-        .ribbon-v {
-            position: absolute; left: 50%; top: 0; bottom: 0;
-            width: 20px; background: #ff5252; transform: translateX(-50%);
+        input[type=range] {
+            width: 150px;
         }
-        .ribbon-h {
-            position: absolute; top: 50%; left: 0; right: 0;
-            height: 20px; background: #ff5252; transform: translateY(-50%);
+        .status {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
         }
-        .click-text {
-            margin-top: 30px;
-            color: white; font-size: 1.2rem; letter-spacing: 2px;
-            animation: blink 1.5s infinite;
-        }
-
-        /* --- 6. THE BOOK REVEAL --- */
-        #book-layer {
-            display: none; /* Hidden Initially */
-            position: relative; z-index: 30;
-            width: 90%; max-width: 750px;
-            perspective: 1500px;
-        }
-
-        .book {
-            display: flex;
-            background: #fff;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(255, 0, 127, 0.5); /* Pink Glow Shadow */
-            animation: openBook 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            min-height: 450px;
-        }
-
-        .left-page {
-            flex: 1; background: #fff0f5; /* Light Pink Page */
-            padding: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-right: 2px dashed #ff80ab;
-        }
-
-        .right-page {
-            flex: 1; background: #fff;
-            padding: 30px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center;
-            position: relative;
-        }
-
-        .polaroid {
-            background: white; padding: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transform: rotate(-3deg);
-            width: 85%;
-            margin-bottom: 15px;
-        }
-        .polaroid img { width: 100%; border-radius: 4px; }
-
-        .wish-title {
-            font-family: 'Dancing Script', cursive;
-            font-size: 2.5rem; color: #ff007f;
-            margin-bottom: 15px;
-        }
-        .wish-body {
-            color: #555; font-size: 1.1rem; line-height: 1.6;
-            font-family: 'Quicksand', sans-serif;
-        }
-        
-        /* Mobile Stack */
-        @media (max-width: 600px) {
-            .book { flex-direction: column; min-height: auto; }
-            .left-page { border-right: none; border-bottom: 2px dashed #ff80ab; padding: 30px 20px; }
-            .neon-text { font-size: 2.5rem; }
-            .name-highlight { font-size: 3rem; }
-        }
-
-        /* Music Button */
-        .music-control {
-            position: fixed; top: 20px; right: 20px; z-index: 100;
-            font-size: 2rem; cursor: pointer;
-            filter: drop-shadow(0 0 5px #ff007f);
-            animation: spin 5s linear infinite;
-        }
-
-        /* Animations */
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes zoomIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes blink { 50% { opacity: 0.5; } }
-        @keyframes openBook { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
     </style>
 </head>
 <body>
 
-    <canvas id="matrix"></canvas>
-
-    <div id="loading-layer">
-        <div class="count-number" id="countdown">3</div>
+<div id="controls">
+    <h3>NIHAN SYSTEM</h3>
+    <div class="control-group">
+        <label>Colony Size: <span id="countVal">100</span></label>
+        <input type="range" id="antRange" min="20" max="300" value="100">
     </div>
-
-    <div id="title-layer">
-        <div class="neon-text">
-            Happy Birthday<br>To You<br>
-            <span class="name-highlight">Khona ❤️</span>
-        </div>
+    <div class="control-group">
+        <label>Speed Factor</label>
+        <input type="range" id="speedRange" min="1" max="5" step="0.1" value="2">
     </div>
-
-    <div id="gift-layer">
-        <div class="gift-box-container" id="gift-btn">
-            <div class="gift-box">
-                <div class="ribbon-v"></div>
-                <div class="ribbon-h"></div>
-            </div>
-        </div>
-        <div class="click-text">Tap to start magic ✨</div>
+    <div class="status">
+        Interaction: Mouse Move (Attract)<br>
+        Defense: Click (Scatter)
     </div>
+</div>
 
-    <div id="book-layer">
-        <div class="book">
-            <div class="left-page">
-                <h2 style="font-family:'Dancing Script'; color:#ff007f; font-size:1.8rem;">Beautiful Moments</h2>
-                <div class="polaroid">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a3Z5aW12a/LpDmM2wSt6Hm5fKJVa/giphy.gif" alt="Memory">
-                </div>
-                <div style="background:#ff007f; color:white; padding:5px 15px; border-radius:15px; font-size:0.8rem; margin-top:5px;">
-                    October 21, 2026
-                </div>
-            </div>
+<canvas id="antCanvas"></canvas>
 
-            <div class="right-page">
-                <div class="wish-title">Happy Birthday!</div>
-                <p class="wish-body">
-                    Dear <b>Khona</b>,<br><br>
-                    May your day be filled with endless joy, sweet surprises, and magical moments. You deserve all the happiness in the world!
-                    <br><br>
-                    Keep Shining! ✨
-                </p>
-                <div style="font-size: 2rem; margin-top: 15px;">🎂🎁🎈</div>
-            </div>
-        </div>
-    </div>
+<script>
+    const canvas = document.getElementById('antCanvas');
+    const ctx = canvas.getContext('2d');
 
-    <div class="music-control" id="music-btn">🎵</div>
-    <audio id="bg-music" loop>
-        <source src="https://raw.githubusercontent.com/yixizhang/HTML5-Audio-Visualizer/master/audio/happy_birthday.mp3" type="audio/mp3">
-    </audio>
+    let width, height;
+    
+    // Mouse Interaction Object
+    const mouse = { x: -1000, y: -1000, active: false };
 
-    <script>
-        // Use DOMContentLoaded to prevent "Stuck at 3"
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // --- 1. SETUP ---
-            const countdownEl = document.getElementById('countdown');
-            const loadingLayer = document.getElementById('loading-layer');
-            const titleLayer = document.getElementById('title-layer');
-            const giftLayer = document.getElementById('gift-layer');
-            const bookLayer = document.getElementById('book-layer');
-            const giftBtn = document.getElementById('gift-btn');
-            const musicBtn = document.getElementById('music-btn');
-            const audio = document.getElementById('bg-music');
+    // System Variables
+    let ants = [];
+    let antCount = 100;
+    let globalSpeed = 2;
+    let panicMode = false;
 
-            // --- 2. MATRIX RAIN (Pink Theme) ---
-            const canvas = document.getElementById('matrix');
-            const ctx = canvas.getContext('2d');
-            
-            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-            window.addEventListener('resize', resize); resize();
+    // Resize Handler
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-            const chars = "KHONA❤️BDAY";
-            const fontSize = 14;
-            const columns = canvas.width / fontSize;
-            const drops = Array(Math.floor(columns)).fill(1);
+    // Mouse Listeners
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+    });
 
-            function draw() {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.font = fontSize + 'px monospace';
-                
-                for(let i=0; i<drops.length; i++) {
-                    const text = chars[Math.floor(Math.random()*chars.length)];
-                    // Mix of Pink, Hot Pink, and White
-                    const colors = ['#ff007f', '#ff80ab', '#ffffff'];
-                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-                    
-                    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-                    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                    drops[i]++;
+    window.addEventListener('mousedown', () => {
+        panicMode = true;
+        setTimeout(() => { panicMode = false; }, 800); // Panic lasts 0.8 seconds
+    });
+
+    // UI Listeners
+    const antRange = document.getElementById('antRange');
+    const speedRange = document.getElementById('speedRange');
+    const countVal = document.getElementById('countVal');
+
+    antRange.addEventListener('input', (e) => {
+        antCount = parseInt(e.target.value);
+        countVal.innerText = antCount;
+        initAnts();
+    });
+
+    speedRange.addEventListener('input', (e) => {
+        globalSpeed = parseFloat(e.target.value);
+    });
+
+    // --- The Advanced Ant Class ---
+    class Ant {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.angle = Math.random() * Math.PI * 2;
+            this.size = Math.random() * 0.4 + 0.6; // Scale
+            this.baseSpeed = Math.random() * 0.5 + 0.5;
+            this.walkCycle = Math.random() * 10; // For leg animation
+            this.turnSpeed = 0.1;
+        }
+
+        update() {
+            let targetAngle = this.angle;
+            let speedMultiplier = 1;
+
+            // 1. Interaction Logic (Mouse)
+            if (mouse.active) {
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+
+                if (panicMode && dist < 300) {
+                    // SCATTER: Run away from mouse
+                    targetAngle = Math.atan2(dy, dx) + Math.PI; // Opposite direction
+                    speedMultiplier = 4; // Run fast
+                    this.turnSpeed = 0.5;
+                } 
+                else if (dist < 400 && !panicMode) {
+                    // ATTRACT: Swarm towards mouse (with some randomness)
+                    targetAngle = Math.atan2(dy, dx);
+                    speedMultiplier = 1.5;
+                    this.turnSpeed = 0.15;
                 }
             }
-            setInterval(draw, 50);
 
-            // --- 3. COUNTDOWN LOGIC ---
-            let count = 3;
-            const timer = setInterval(() => {
-                count--;
-                if(count > 0) {
-                    countdownEl.innerText = count;
-                } else {
-                    clearInterval(timer);
-                    // Step 1: Hide Countdown
-                    loadingLayer.style.display = 'none';
-                    
-                    // Step 2: Show Title (Neon Text)
-                    titleLayer.style.display = 'flex';
-                    
-                    // Step 3: Wait 3 seconds, then show Gift
-                    setTimeout(() => {
-                        titleLayer.style.opacity = '0'; // Fade out title
-                        setTimeout(() => {
-                            titleLayer.style.display = 'none';
-                            giftLayer.style.display = 'flex'; // Show Gift
-                        }, 500);
-                    }, 3000);
-                }
-            }, 1000);
+            // 2. Smooth Steering (Turn towards target)
+            // Determine the shortest rotation direction
+            let diff = targetAngle - this.angle;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            
+            // Add randomness (Ants are jittery)
+            diff += (Math.random() - 0.5) * 0.5; 
 
-            // --- 4. INTERACTION ---
-            giftBtn.addEventListener('click', () => {
-                // Play Audio
-                audio.play().catch(e => console.log("Audio blocked"));
-                
-                // Hide Gift
-                giftLayer.style.opacity = '0';
-                setTimeout(() => {
-                    giftLayer.style.display = 'none';
-                    
-                    // Show Book
-                    bookLayer.style.display = 'block';
-                }, 500);
-            });
+            this.angle += diff * this.turnSpeed;
 
-            // Music Toggle
-            musicBtn.addEventListener('click', () => {
-                if(audio.paused) audio.play();
-                else audio.pause();
-            });
+            // 3. Move
+            const currentSpeed = this.baseSpeed * globalSpeed * speedMultiplier;
+            this.x += Math.cos(this.angle) * currentSpeed;
+            this.y += Math.sin(this.angle) * currentSpeed;
 
+            // 4. Update Walk Cycle (Leg animation speed depends on movement speed)
+            this.walkCycle += currentSpeed * 0.5;
+
+            // 5. Screen Wrapping
+            if (this.x < -20) this.x = width + 20;
+            if (this.x > width + 20) this.x = -20;
+            if (this.y < -20) this.y = height + 20;
+            if (this.y > height + 20) this.y = -20;
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            const s = this.size;
+            ctx.fillStyle = "#362312";
+            ctx.strokeStyle = "#362312";
+            ctx.lineWidth = 0.5;
+            ctx.lineCap = "round";
+
+            // --- Animated Legs ---
+            // We use sin/cos of walkCycle to oscillate legs
+            const legOffset = Math.sin(this.walkCycle) * 0.2; 
+            const legOffset2 = Math.cos(this.walkCycle) * 0.2; 
+
+            const legLen = 4 * s;
+
+            // Leg Group 1 (Front-Right, Mid-Left, Back-Right)
+            this.drawLeg(1.5*s, 2*s, legLen, -0.5 + legOffset);  // Front R
+            this.drawLeg(-0.5*s, -2*s, legLen, 0 + legOffset);   // Mid L
+            this.drawLeg(-2.5*s, 2*s, legLen, 0.5 + legOffset);  // Back R
+
+            // Leg Group 2 (Front-Left, Mid-Right, Back-Left)
+            this.drawLeg(1.5*s, -2*s, legLen, -0.5 + legOffset2); // Front L
+            this.drawLeg(-0.5*s, 2*s, legLen, 0 + legOffset2);    // Mid R
+            this.drawLeg(-2.5*s, -2*s, legLen, 0.5 + legOffset2); // Back L
+
+            // --- Body Segments ---
+            ctx.beginPath();
+            ctx.arc(1.5 * s, 0, 0.9 * s, 0, Math.PI * 2); // Head
+            ctx.arc(-0.5 * s, 0, 0.8 * s, 0, Math.PI * 2); // Thorax
+            ctx.ellipse(-3 * s, 0, 1.8 * s, 1.3 * s, 0, 0, Math.PI * 2); // Abdomen
+            ctx.fill();
+
+            // Antennae
+            ctx.beginPath();
+            ctx.moveTo(2*s, 0.5*s); ctx.lineTo(4*s, 2*s);
+            ctx.moveTo(2*s, -0.5*s); ctx.lineTo(4*s, -2*s);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        drawLeg(x, y, len, angleOffset) {
+            // Helper to draw a jointed leg
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            
+            // Knee position
+            const kneeX = x + (y > 0 ? 2 : 2); 
+            const kneeY = y;
+            
+            ctx.lineTo(kneeX, kneeY);
+            
+            // Foot position (Adding movement)
+            const footX = kneeX + len * Math.cos(angleOffset);
+            const footY = kneeY + len * Math.sin(Math.PI/2 + angleOffset * (y>0?1:-1));
+            
+            ctx.lineTo(footX, footY);
+            ctx.stroke();
+        }
+    }
+
+    // --- Initialization & Loop ---
+    function initAnts() {
+        ants = [];
+        for (let i = 0; i < antCount; i++) {
+            ants.push(new Ant());
+        }
+    }
+
+    function drawWatermark() {
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.font = "900 70px Courier New";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.04)"; 
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("NIHAN PROGRAMMING", 0, 0);
+        
+        ctx.font = "14px Courier New";
+        ctx.fillText("ADVANCED SIMULATION v2.0", 0, 50);
+        ctx.restore();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        
+        drawWatermark();
+
+        ants.forEach(ant => {
+            ant.update();
+            ant.draw();
         });
-    </script>
+
+        requestAnimationFrame(animate);
+    }
+
+    initAnts();
+    animate();
+
+</script>
+
 </body>
 </html>
