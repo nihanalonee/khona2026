@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NIHAN_AI_V4.0 // SYSTEM FAILURE</title>
+    <title>NIHAN_AI_V5.0 // SYSTEM CRITICAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Nosifer&family=Rubik+Glitch&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CORE SETTINGS --- */
+        /* --- CORE STYLES --- */
         body {
             margin: 0;
             padding: 0;
@@ -19,176 +19,132 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
             user-select: none;
         }
 
-        /* --- BACKGROUND MATRIX EFFECT --- */
+        /* Scanlines for old monitor look */
         .scanlines {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
             background-size: 100% 4px;
-            z-index: 2;
-            pointer-events: none;
+            z-index: 5; pointer-events: none;
         }
-        
+
+        /* --- CONSOLE LOGS --- */
         #console-log {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            color: rgba(0, 255, 0, 0.4);
-            font-size: 12px;
-            z-index: 1;
-            white-space: pre-wrap;
-            overflow: hidden;
-            text-shadow: 0 0 5px #0f0;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: 20px; box-sizing: border-box;
+            color: rgba(0, 255, 0, 0.4); font-size: 12px;
+            z-index: 1; white-space: pre-wrap; overflow: hidden;
         }
 
-        /* --- UI CONTAINER --- */
-        #main-container {
-            z-index: 10;
-            position: relative;
-            text-align: center;
-            width: 100%;
-        }
+        /* --- MAIN UI --- */
+        #main-container { z-index: 10; position: relative; text-align: center; width: 100%; }
 
-        /* --- PASSWORD INPUT PHASE --- */
+        /* PASSWORD BOX */
         .cyber-input {
-            border: 2px solid #0f0;
-            background: rgba(0, 20, 0, 0.9);
-            color: #0f0;
-            padding: 15px 30px;
-            font-size: 25px;
-            font-family: 'Share Tech Mono', monospace;
-            box-shadow: 0 0 20px #0f0, inset 0 0 10px #0f0;
-            display: none;
-            text-transform: uppercase;
-            letter-spacing: 5px;
+            border: 2px solid #0f0; background: rgba(0, 20, 0, 0.9);
+            color: #0f0; padding: 15px 30px; font-size: 25px;
+            box-shadow: 0 0 20px #0f0; display: none;
+            text-transform: uppercase; letter-spacing: 5px;
         }
 
-        /* --- THE ADVANCED GIFT BOX --- */
-        .gift-container {
-            display: none;
-            cursor: pointer;
-            position: relative;
-        }
-
+        /* MYSTERY BOX */
+        .gift-container { display: none; cursor: pointer; }
         .mystery-box {
-            width: 150px;
-            height: 150px;
+            width: 150px; height: 150px; margin: 0 auto;
             background: radial-gradient(circle, #330000, #000);
             border: 4px solid #ff0033;
-            box-shadow: 0 0 50px #ff0033, inset 0 0 30px #ff0033;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            animation: heartbeat 0.8s infinite;
-            position: relative;
-            margin: 0 auto;
-            transform-style: preserve-3d;
+            box-shadow: 0 0 50px #ff0033;
+            display: flex; justify-content: center; align-items: center;
+            animation: heartbeat 0.8s infinite; position: relative;
         }
-
         .box-text {
-            color: #fff;
-            font-family: 'Rubik Glitch', cursive; /* Scary tech font */
-            font-size: 22px;
-            text-align: center;
-            text-shadow: 2px 2px 0px #ff0033;
-            z-index: 2;
-            pointer-events: none;
+            color: #fff; font-family: 'Rubik Glitch', cursive;
+            font-size: 22px; text-align: center; pointer-events: none;
         }
-
-        /* Warning Tape effect around the box */
         .mystery-box::before {
-            content: '';
-            position: absolute;
+            content: ''; position: absolute;
             top: -10px; left: -10px; right: -10px; bottom: -10px;
-            border: 2px dashed yellow;
-            animation: spin 10s linear infinite;
+            border: 2px dashed yellow; animation: spin 10s linear infinite;
         }
 
-        /* --- THE JUMP SCARE REVEAL --- */
-        #scare-content {
-            display: none;
-            width: 100%;
-        }
-
+        /* JUMP SCARE TEXT */
+        #scare-content { display: none; width: 100%; }
         .scare-text {
-            font-family: 'Nosifer', cursive; /* Dripping blood font */
-            font-size: 80px;
-            color: #ff0000;
+            font-family: 'Nosifer', cursive; font-size: 80px; color: #ff0000;
             text-shadow: 4px 4px 0 #fff, 0 0 50px red;
             animation: violent-shake 0.15s infinite;
-            line-height: 1.2;
+        }
+        .sub-scare {
+            font-family: 'Share Tech Mono', monospace; color: white;
+            font-size: 20px; margin-top: 20px; letter-spacing: 5px;
         }
 
-        .sub-scare {
-            font-family: 'Share Tech Mono', monospace;
-            color: white;
-            font-size: 20px;
-            margin-top: 20px;
-            letter-spacing: 5px;
+        /* --- NEW ANIMATED POPUP --- */
+        #custom-popup {
+            display: none;
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            background: #000;
+            border: 3px solid red;
+            box-shadow: 0 0 100px red, inset 0 0 50px red;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+            animation: popup-entry 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .popup-header {
+            background: red; color: white; font-weight: bold;
+            padding: 5px; font-family: sans-serif; font-size: 14px;
+            margin: -20px -20px 20px -20px;
+            text-transform: uppercase;
+        }
+
+        .popup-msg {
+            color: white; font-size: 18px; line-height: 1.5;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold; margin-bottom: 20px;
+        }
+
+        .cry-text {
+            color: red; font-size: 28px; font-weight: 900;
+            font-family: 'Nosifer', cursive;
+            display: block; margin-top: 10px;
+            animation: blink 0.2s infinite;
+        }
+
+        /* Camera Feed Simulation (Optional Fake Overlay) */
+        .camera-overlay {
+            position: absolute; top: 10px; right: 10px;
+            width: 10px; height: 10px; background: red;
+            border-radius: 50%; box-shadow: 0 0 10px red;
+            animation: blink 1s infinite; display: none;
         }
 
         /* --- ANIMATIONS --- */
-        @keyframes heartbeat {
-            0% { transform: scale(1); box-shadow: 0 0 30px #ff0033; }
-            50% { transform: scale(1.1); box-shadow: 0 0 80px #ff0033; }
-            100% { transform: scale(1); box-shadow: 0 0 30px #ff0033; }
-        }
-
+        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        @keyframes violent-shake {
-            0% { transform: translate(2px, 2px) rotate(0deg); }
-            25% { transform: translate(-4px, -4px) rotate(-2deg); }
-            50% { transform: translate(4px, 0px) rotate(2deg); }
-            75% { transform: translate(-2px, 4px) rotate(0deg); }
-            100% { transform: translate(2px, -2px) rotate(-1deg); }
-        }
-
-        @keyframes strobe {
-            0% { background-color: #000; }
-            50% { background-color: #300; }
-            100% { background-color: #000; }
+        @keyframes violent-shake { 0% { transform: translate(2px, 2px); } 25% { transform: translate(-4px, -4px); } 50% { transform: translate(4px, 0px); } 75% { transform: translate(-2px, 4px); } 100% { transform: translate(2px, -2px); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes strobe { 0% { background-color: #000; } 50% { background-color: #300; } 100% { background-color: #000; } }
+        .strobe-bg { animation: strobe 0.1s infinite; }
+        
+        @keyframes popup-entry {
+            0% { transform: translate(-50%, -60%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
         
-        .strobe-bg {
-            animation: strobe 0.1s infinite;
-        }
-
-        /* Glitch Text Effect */
-        .glitch-text {
-            position: relative;
-        }
-        .glitch-text::before, .glitch-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-        }
-        .glitch-text::before {
-            left: 2px; text-shadow: -1px 0 #ff00c1; clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim 5s infinite linear alternate-reverse;
-        }
-        .glitch-text::after {
-            left: -2px; text-shadow: -1px 0 #00fff9; clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim2 5s infinite linear alternate-reverse;
-        }
-
     </style>
 </head>
 <body>
 
     <div class="scanlines"></div>
     <div id="console-log"></div>
+    <div class="camera-overlay" id="rec-dot"></div>
 
     <div id="main-container">
         <div id="password-box" class="cyber-input">
@@ -208,15 +164,24 @@
         </div>
     </div>
 
+    <div id="custom-popup">
+        <div class="popup-header">⚠ SYSTEM SECURITY BREACH ⚠</div>
+        <div class="popup-msg">
+            CAMERA ACCESS: <span style="color:#0f0">GRANTED</span><br>
+            UPLOADING FOOTAGE... 99%
+            <span class="cry-text">NOW CRY!</span>
+        </div>
+    </div>
+
 <script>
-    // System Variables
     const consoleLog = document.getElementById('console-log');
     const passBox = document.getElementById('password-box');
     const typedPass = document.getElementById('typed-pass');
     const giftArea = document.getElementById('gift-area');
     const scareContent = document.getElementById('scare-content');
+    const popup = document.getElementById('custom-popup');
+    const recDot = document.getElementById('rec-dot');
 
-    // --- HACKER TEXT GENERATOR ---
     function randomStr(len) {
         let text = "";
         let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
@@ -224,85 +189,8 @@
         return text;
     }
 
-    // --- PHASE 1: BOOT SEQUENCE ---
+    // 1. BOOT
     function bootSystem() {
         let lines = 0;
-        let maxLines = 30;
         let bootInterval = setInterval(() => {
             consoleLog.innerHTML += `> SYSTEM_OVERRIDE... [${randomStr(8)}]<br>`;
-            consoleLog.innerHTML += `> BYPASSING FIREWALL... SUCCESS<br>`;
-            consoleLog.innerHTML += `> UPLOADING VIRUS... ${Math.floor(Math.random()*100)}%<br>`;
-            consoleLog.scrollTop = consoleLog.scrollHeight;
-            lines++;
-            
-            if(lines > maxLines) {
-                clearInterval(bootInterval);
-                consoleLog.innerHTML = ""; // Clear for focus
-                injectPassword();
-            }
-        }, 80);
-    }
-
-    // --- PHASE 2: PASSWORD INJECTION ---
-    function injectPassword() {
-        passBox.style.display = "inline-block";
-        let pass = "NIHAN";
-        let i = 0;
-        
-        setTimeout(() => {
-            let typeInterval = setInterval(() => {
-                typedPass.innerText += pass.charAt(i);
-                i++;
-                if(i >= pass.length) {
-                    clearInterval(typeInterval);
-                    setTimeout(() => {
-                        passBox.style.background = "#0f0";
-                        passBox.style.color = "#000";
-                        passBox.innerHTML = "ACCESS GRANTED";
-                        setTimeout(showGift, 1500);
-                    }, 500);
-                }
-            }, 200);
-        }, 500);
-    }
-
-    // --- PHASE 3: SHOW THE TRAP ---
-    function showGift() {
-        passBox.style.display = "none";
-        consoleLog.style.opacity = "0.2";
-        // Background turns slightly red
-        document.body.style.background = "radial-gradient(circle, #220000, #000)";
-        
-        consoleLog.innerHTML = `> WARNING: UNKNOWN OBJECT DETECTED<br>> SCANNING... FAILED<br>> PROTOCOL: DO NOT OPEN`;
-        
-        giftArea.style.display = "block";
-    }
-
-    // --- PHASE 4: THE SCARE (ACTION) ---
-    function triggerScare() {
-        // 1. Mobile Vibration (If supported)
-        if (navigator.vibrate) {
-            navigator.vibrate([200, 100, 200, 100, 500]); 
-        }
-
-        // 2. Visual Chaos
-        giftArea.style.display = "none";
-        consoleLog.style.display = "none";
-        document.body.className = "strobe-bg"; // Flashing background
-        
-        scareContent.style.display = "block";
-
-        // 3. Optional: Redirect or reset after 5 seconds
-        setTimeout(() => {
-            alert("SYSTEM CRASHED BY NIHAN");
-            location.reload();
-        }, 5000);
-    }
-
-    // Start on Load
-    window.onload = bootSystem;
-
-</script>
-
-</body>
-</html>
