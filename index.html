@@ -2,147 +2,442 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NIHAN TERMINAL V.9</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KERNEL_PANIC // NIHAN_OVERRIDE</title>
     <style>
-        /* --- CORE STYLES --- */
+        /* --- 1. RESET & CORE --- */
+        :root {
+            --term-green: #0f0;
+            --term-red: #ff3333;
+            --term-bg: #000;
+            --term-dim: rgba(0, 255, 0, 0.3);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; cursor: none; /* Hide Cursor */ }
+        
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
-            color: #00ff41; /* Classic Hacker Green */
+            background-color: var(--term-bg);
+            color: var(--term-green);
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
+            width: 100vw;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
             user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* --- CRT MONITOR EFFECT (Scanlines) --- */
-        .scanlines {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(
-                to bottom,
-                rgba(255,255,255,0),
-                rgba(255,255,255,0) 50%,
-                rgba(0,0,0,0.3) 50%,
-                rgba(0,0,0,0.3)
-            );
-            background-size: 100% 4px;
-            z-index: 100;
-            pointer-events: none;
-        }
-        /* Screen Glow */
-        .scanlines::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: radial-gradient(circle, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 100%);
-            z-index: 101;
+        /* --- 2. LAYERS & CANVAS --- */
+        #matrix-canvas {
+            position: absolute; top: 0; left: 0;
+            z-index: 1; opacity: 0.15;
         }
 
-        /* --- TERMINAL OUTPUT --- */
-        #terminal {
-            padding: 20px;
-            font-size: 14px; /* Mobile Friendly Size */
-            line-height: 1.4;
-            height: 100%;
-            overflow: hidden;
-            white-space: pre-wrap;
-            text-shadow: 0 0 5px #00ff41;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end; /* Text stays at bottom like real terminal */
-        }
-
-        /* --- PASSWORD UI --- */
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; /* Hidden initially */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            background: rgba(0,0,0,0.9);
-        }
-
-        .input-box {
-            border: 2px solid #00ff41;
-            padding: 15px 30px;
-            font-size: 24px;
-            background: #001100;
-            box-shadow: 0 0 20px #00ff41;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        /* --- MYSTERY BOX --- */
-        .mystery-box {
-            width: 130px; height: 130px;
-            background: red;
-            border: 4px solid white;
-            box-shadow: 0 0 50px red;
-            display: flex;
-            align-items: center; justify-content: center;
-            cursor: pointer;
-            animation: pulse-agressive 0.3s infinite alternate;
-            margin-top: 20px;
-        }
-        .box-text {
-            color: white; font-weight: 900; font-size: 20px; text-align: center;
-            text-shadow: 2px 2px 0 black;
-        }
-
-        /* --- SCARE & POPUP --- */
-        #scare-layer {
-            display: none;
+        #crt-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: black;
-            z-index: 200;
-            flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-        
-        .scare-text {
-            font-size: 80px; color: red; font-weight: 900;
-            text-shadow: 5px 5px 0 white;
-            animation: glitch-shake 0.1s infinite;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none; z-index: 999;
         }
 
-        #custom-popup {
-            display: none;
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%; max-width: 350px;
-            background: #000;
-            border: 3px solid red;
-            box-shadow: 0 0 100px red, inset 0 0 30px red;
-            z-index: 300;
+        #main-wrapper {
+            position: relative; z-index: 10;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
             padding: 20px;
-            text-align: center;
         }
-        .cry-text {
-            color: red; font-size: 26px; font-weight: 900;
-            display: block; margin-top: 15px;
-            animation: blink 0.2s infinite;
+
+        /* --- 3. TERMINAL UI --- */
+        .terminal-window {
+            width: 100%; flex: 1;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            justify-content: flex-end;
+            font-size: 14px; text-shadow: 0 0 5px var(--term-green);
+        }
+
+        .log-line { margin: 2px 0; word-break: break-all; }
+        .log-error { color: var(--term-red); text-shadow: 0 0 5px var(--term-red); }
+        .log-warn { color: yellow; }
+        .log-highlight { background: var(--term-green); color: black; font-weight: bold; padding: 0 5px; }
+
+        /* --- 4. PROGRESS BARS --- */
+        .progress-container {
+            width: 100%; border: 1px solid var(--term-green);
+            height: 20px; margin: 10px 0; position: relative;
+        }
+        .progress-fill {
+            height: 100%; background: var(--term-green);
+            width: 0%; transition: width 0.1s linear;
+        }
+
+        /* --- 5. INTERACTIVE UI (PASSWORD & BOX) --- */
+        #interactive-layer {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none; /* JS will show this */
+            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.8);
+            z-index: 50; flex-direction: column;
+        }
+
+        .cyber-box {
+            border: 2px solid var(--term-green);
+            background: #001100; padding: 30px;
+            box-shadow: 0 0 30px var(--term-green);
+            text-align: center; width: 90%; max-width: 400px;
+        }
+
+        .input-display {
+            font-size: 30px; letter-spacing: 5px; font-weight: bold;
+            border-bottom: 2px solid var(--term-green);
+            margin-top: 20px; padding-bottom: 5px; display: inline-block;
+            min-width: 200px;
+        }
+
+        /* GIFT BOX STYLES */
+        .gift-wrapper {
+            display: none; flex-direction: column; align-items: center;
+        }
+        .danger-box {
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, #500, #000);
+            border: 4px solid #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative;
+            box-shadow: 0 0 50px red;
+            animation: heartBeat 0.5s infinite;
+        }
+        .danger-box::after {
+            content: "⚠"; font-size: 60px; color: rgba(255,255,255,0.2);
+            position: absolute;
+        }
+        .box-label {
+            color: #fff; font-weight: 900; z-index: 2; font-size: 20px;
+            text-align: center; text-transform: uppercase;
+        }
+
+        /* --- 6. SCARE & POPUP --- */
+        #scare-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 100;
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        .scare-text {
+            font-size: 15vw; color: red; font-weight: 900;
+            line-height: 0.8; text-align: center;
+            text-shadow: 5px 5px 0 #fff;
+            animation: violentShake 0.1s infinite;
+        }
+
+        #final-popup {
+            display: none; position: fixed;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; max-width: 350px;
+            background: #000; border: 5px solid red;
+            padding: 20px; z-index: 200; text-align: center;
+            box-shadow: 0 0 100px red, inset 0 0 50px red;
         }
 
         /* --- ANIMATIONS --- */
-        @keyframes pulse-agressive { from { transform: scale(1); } to { transform: scale(1.1); } }
-        @keyframes blink { 50% { opacity: 0; } }
-        @keyframes glitch-shake {
-            0% { transform: translate(2px, 2px); }
-            25% { transform: translate(-2px, -2px); }
-            50% { transform: translate(2px, -2px); }
-            75% { transform: translate(-2px, 2px); }
-            100% { transform: translate(0, 0); }
-        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.1); border-color: red; } 100% { transform: scale(1); } }
+        @keyframes violentShake { 0% { transform: translate(2px, 2px); } 25% { transform: translate(-2px, -2px); } 50% { transform: translate(2px, -2px); } 75% { transform: translate(-2px, 2px); } 100% { transform: translate(0, 0); } }
+        @keyframes strobe { 0% { background: black; } 50% { background: red; } 100% { background: black; } }
 
     </style>
 </head>
 <body>
 
-    <div class="scanlines"></div>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="crt-overlay"></div>
 
+    <div id="main-wrapper">
+        <div class="terminal-window" id="terminal-output">
+            <div class="log-line">NIHAN_OS [Version 10.0.19044.1288]</div>
+            <div class="log-line">(c) 2026 Nihan Corporation. All rights reserved.</div>
+            <br>
+        </div>
+    </div>
+
+    <div id="interactive-layer">
+        
+        <div id="password-mode" class="cyber-box">
+            <div style="color: #0f0;">SECURITY CHECKPOINT</div>
+            <div class="input-display">
+                <span id="pass-typed"></span><span style="animation:blink 0.1s infinite">█</span>
+            </div>
+            <div id="pass-status" style="margin-top: 15px; font-size: 12px; color: #666;">WAITING FOR INPUT...</div>
+        </div>
+
+        <div id="box-mode" class="gift-wrapper">
+            <div class="danger-box" onclick="App.triggerScare()">
+                <div class="box-label">CLICK<br>NOW</div>
+            </div>
+            <div style="background: black; color: red; padding: 5px 10px; margin-top: 20px; font-weight: bold; border: 1px solid red;">
+                ⚠ UNKNOWN OBJECT DETECTED
+            </div>
+        </div>
+
+    </div>
+
+    <div id="scare-overlay">
+        <div class="scare-text">FUCK<br>YOU</div>
+        <div style="color: white; font-size: 20px; margin-top: 20px; letter-spacing: 5px;">NIHAN IS HERE</div>
+    </div>
+
+    <div id="final-popup">
+        <h2 style="background: red; color: white; margin: -20px -20px 20px -20px; padding: 10px;">⚠ SECURITY BREACH ⚠</h2>
+        <p style="color: white; font-family: Arial; font-size: 14px; margin-bottom: 20px;">
+            SYSTEM HAS DETECTED UNAUTHORIZED USER.<br>
+            CAMERA: <span style="color: #0f0; font-weight: bold;">RECORDING [ON]</span><br>
+            UPLOADING FOOTAGE TO SERVER...
+        </p>
+        <h1 style="color: red; font-family: 'Courier New'; font-weight: 900; animation: blink 0.2s infinite;">NOW CRY!</h1>
+    </div>
+
+<script>
+/**
+ * NIHAN ADVANCED HACKING SCRIPT v10
+ * Features: Audio Synthesis, Canvas Matrix, Async Logic, DOM Manipulation
+ */
+
+const App = {
+    config: {
+        bootDelay: 50,
+        hackSpeed: 100,
+        pass: "NIHAN",
+        vibrate: true
+    },
     
+    // --- AUDIO ENGINE (Pure JS Synthesis) ---
+    audioCtx: null,
+    
+    initAudio: function() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.audioCtx = new AudioContext();
+        } catch(e) { console.log("Audio not supported"); }
+    },
+
+    playTone: function(freq, type, duration) {
+        if (!this.audioCtx) return;
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, this.audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start();
+        osc.stop(this.audioCtx.currentTime + duration);
+    },
+
+    playStatic: function(duration) {
+        if (!this.audioCtx) return;
+        const bufferSize = this.audioCtx.sampleRate * duration;
+        const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const gain = this.audioCtx.createGain();
+        gain.gain.value = 0.5; // volume
+        noise.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        noise.start();
+    },
+
+    // --- LOGGING SYSTEM ---
+    terminal: document.getElementById('terminal-output'),
+    
+    log: function(msg, type = "normal") {
+        const div = document.createElement('div');
+        div.className = "log-line";
+        
+        const timestamp = new Date().toLocaleTimeString('en-US', {hour12: false}) + "." + Math.floor(Math.random()*999);
+        
+        let content = `[${timestamp}] `;
+        
+        if (type === "error") {
+            div.classList.add("log-error");
+            content += "[ERROR] ";
+        } else if (type === "warn") {
+            div.classList.add("log-warn");
+            content += "[WARN] ";
+        } else if (type === "success") {
+            content += "[OK] ";
+        }
+        
+        div.innerText = content + msg;
+        this.terminal.appendChild(div);
+        this.terminal.scrollTop = this.terminal.scrollHeight; // Auto scroll
+        
+        // Sound effect for typing
+        if(Math.random() > 0.5) this.playTone(800, 'square', 0.05);
+    },
+
+    // --- MATRIX BACKGROUND ---
+    initMatrix: function() {
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*NIHAN";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function draw() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0F0";
+            ctx.font = fontSize + "px monospace";
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    },
+
+    // --- SEQUENCE CONTROLLER ---
+    startSequence: async function() {
+        this.initAudio();
+        this.initMatrix();
+        
+        // 1. BIOS BOOT
+        const bootLogs = [
+            "Initializing Kernel...",
+            "Loading Modules: CPU, RAM, GPU...",
+            "Checking Memory Integrity... 64GB OK",
+            "Mounting File System... /dev/sda1",
+            "Starting Network Service...",
+            "Connecting to Satellite uplink...",
+            "IP Address Assigned: 192.168.X.X",
+            "Bypassing Firewall Rules...",
+            "Loading User Profile: ADMIN",
+            "System Ready."
+        ];
+
+        for (let line of bootLogs) {
+            this.log(line);
+            await this.sleep(Math.random() * 200 + 100);
+        }
+
+        // 2. FAKE HACKING
+        await this.sleep(500);
+        this.log("INITIATING TARGET SCAN...", "warn");
+        
+        for (let i=0; i<30; i++) {
+            const hex = "0x" + Math.floor(Math.random()*16777215).toString(16).toUpperCase().padEnd(6, '0');
+            this.log(`Dumping Memory Address: ${hex} -> EXTRACTING...`);
+            await this.sleep(30);
+        }
+        
+        this.log("TARGET FOUND: MOBILE DEVICE", "success");
+        this.log("Injecting Payload...", "warn");
+        await this.sleep(1000);
+        
+        // 3. TRANSITION TO PASSWORD
+        this.terminal.style.opacity = "0.2";
+        document.getElementById('interactive-layer').style.display = 'flex';
+        document.getElementById('password-mode').style.display = 'block';
+        this.typePassword();
+    },
+
+    typePassword: async function() {
+        const passElem = document.getElementById('pass-typed');
+        const statusElem = document.getElementById('pass-status');
+        let currentText = "";
+        
+        await this.sleep(1000);
+        
+        for (let i = 0; i < this.config.pass.length; i++) {
+            currentText += this.config.pass[i];
+            passElem.innerText = currentText;
+            this.playTone(1200, 'sine', 0.1); // Beep
+            await this.sleep(300);
+        }
+
+        statusElem.innerText = "ACCESS GRANTED";
+        statusElem.style.color = "#0f0";
+        this.playTone(2000, 'triangle', 0.5); // Success sound
+        
+        await this.sleep(1000);
+        
+        // Transition to Box
+        document.getElementById('password-mode').style.display = 'none';
+        document.getElementById('box-mode').style.display = 'flex';
+        
+        // Background turns reddish
+        document.body.style.background = "#110000";
+        this.terminal.style.display = 'none';
+    },
+
+    triggerScare: function() {
+        // 1. Audio Shock
+        this.initAudio(); // Ensure context is ready
+        this.playStatic(2); // Play white noise for 2 seconds
+        
+        // 2. Vibrate
+        if (navigator.vibrate) navigator.vibrate([1000, 100, 1000]);
+
+        // 3. Visuals
+        document.getElementById('interactive-layer').style.display = 'none';
+        const scareOverlay = document.getElementById('scare-overlay');
+        scareOverlay.style.display = 'flex';
+        
+        // Strobe Effect
+        document.body.style.animation = "strobe 0.1s infinite";
+
+        // 4. Popup Logic
+        setTimeout(() => {
+            document.getElementById('final-popup').style.display = 'block';
+            this.playTone(3000, 'sawtooth', 1.0); // High pitch scream
+        }, 1500);
+        
+        // 5. Hard Crash Simulation (Reload)
+        setTimeout(() => {
+           // location.reload(); // Uncomment to loop
+        }, 8000);
+    },
+
+    sleep: function(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+};
+
+// Start System on Load
+window.onload = function() {
+    // Requires user interaction for audio context usually, 
+    // but we start visual sequence immediately.
+    App.startSequence();
+};
+
+// Add listener to unlock audio on first click anywhere (browser policy)
+document.addEventListener('click', function() {
+    App.initAudio();
+    if(App.audioCtx && App.audioCtx.state === 'suspended') {
+        App.audioCtx.resume();
+    }
+}, {once:true});
+
+</script>
+</body>
+</html>
