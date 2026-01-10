@@ -3,330 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nihan Programming - Ultra Realism</title>
+    <title>SYSTEM OVERRIDE // NIHAN</title>
     <style>
         body {
             margin: 0;
+            padding: 0;
+            background-color: black;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
-            background-color: #e8e8e8; /* Slight texture look */
-            background-image: radial-gradient(#d0d0d0 1px, transparent 1px);
-            background-size: 20px 20px;
-            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            user-select: none;
         }
-        canvas {
-            display: block;
-        }
-        #ui-layer {
+
+        /* --- Hacking Logs --- */
+        #console {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            pointer-events: none; /* Let clicks pass through to canvas */
-        }
-        h1 {
-            margin: 0;
-            font-size: 24px;
-            color: #333;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        p {
-            margin: 5px 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
             font-size: 14px;
-            color: #555;
+            opacity: 0.7;
+            z-index: 1;
+            overflow: hidden;
+            white-space: pre-wrap;
+            pointer-events: none;
+        }
+
+        /* --- Central Stage --- */
+        #stage {
+            z-index: 10;
+            text-align: center;
+            position: relative;
+        }
+
+        /* --- Password Input Style --- */
+        .input-box {
+            border: 2px solid #0f0;
+            padding: 10px 20px;
+            font-size: 24px;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 15px #0f0;
+            display: none;
+        }
+
+        /* --- Access Granted --- */
+        #access-msg {
+            font-size: 40px;
+            font-weight: bold;
+            color: #0f0;
+            text-shadow: 0 0 20px #0f0;
+            border: 4px solid #0f0;
+            padding: 20px;
+            display: none;
+            animation: blink 0.2s infinite;
+        }
+
+        /* --- The Mysterious Box --- */
+        #mystery-box {
+            width: 100px;
+            height: 100px;
+            background: #ff0000;
+            border: 2px solid white;
+            box-shadow: 0 0 30px red;
+            cursor: pointer;
+            display: none;
+            animation: pulse 1s infinite;
+            position: relative;
+        }
+        #mystery-box::before {
+            content: '?';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* --- The Final Message --- */
+        #final-text {
+            display: none;
+            font-size: 80px;
+            font-weight: 900;
+            color: red;
+            text-transform: uppercase;
+            text-shadow: 4px 4px 0px white, 0 0 50px red;
+            animation: shake 0.5s infinite;
+        }
+
+        /* --- Animations --- */
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
     </style>
 </head>
 <body>
 
-<div id="ui-layer">
-    <h1>Nihan Bio-Sim v3.0</h1>
-    <p>System: Tripod Gait & Idle Behavior Active</p>
-    <p>Interaction: Mouse to Attract | Click to Scare</p>
-</div>
+    <div id="console"></div>
 
-<canvas id="simCanvas"></canvas>
+    <div id="stage">
+        <div id="password-area" class="input-box">PASSWORD: <span id="pass-text"></span><span class="cursor">_</span></div>
+        <div id="access-msg">ACCESS GRANTED</div>
+        <div id="mystery-box"></div>
+        <div id="final-text">FUCK YOU</div>
+    </div>
 
 <script>
-    const canvas = document.getElementById('simCanvas');
-    const ctx = canvas.getContext('2d');
+    const consoleDiv = document.getElementById('console');
+    const passArea = document.getElementById('password-area');
+    const passText = document.getElementById('pass-text');
+    const accessMsg = document.getElementById('access-msg');
+    const box = document.getElementById('mystery-box');
+    const finalText = document.getElementById('final-text');
 
-    let w, h;
-    const ants = [];
-    const ANT_COUNT = 80; // Fewer ants, but higher quality
-    
-    // Mouse state
-    const mouse = { x: -9999, y: -9999, click: false };
-
-    // Resize setup
-    function resize() {
-        w = window.innerWidth;
-        h = window.innerHeight;
-        canvas.width = w;
-        canvas.height = h;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    // Input listeners
-    window.addEventListener('mousemove', e => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-    });
-    window.addEventListener('mousedown', () => {
-        mouse.click = true;
-        setTimeout(() => mouse.click = false, 500);
-    });
-
-    // --- UTILITIES ---
-    const random = (min, max) => Math.random() * (max - min) + min;
-
-    // --- THE BIOLOGICAL ANT CLASS ---
-    class Ant {
-        constructor() {
-            this.init();
+    // Generate random hacker code
+    function makeId(length) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*';
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
-
-        init() {
-            this.x = random(0, w);
-            this.y = random(0, h);
-            this.angle = random(0, Math.PI * 2);
-            this.targetAngle = this.angle;
-            this.size = random(0.8, 1.2); // Size variation
-            
-            // Movement Physics
-            this.speed = 0;
-            this.maxSpeed = random(1.5, 2.5);
-            this.acceleration = 0.05;
-            
-            // State Machine: 'WALK' or 'IDLE'
-            this.state = 'WALK';
-            this.stateTimer = random(100, 500);
-
-            // Animation Properties
-            this.walkCycle = 0;
-            this.antennaOffset = 0;
-        }
-
-        update() {
-            // 1. State Management (Stop and Go behavior)
-            this.stateTimer--;
-            if (this.stateTimer <= 0) {
-                if (this.state === 'WALK') {
-                    // Switch to IDLE (Stop to look around)
-                    this.state = 'IDLE';
-                    this.stateTimer = random(50, 150);
-                    this.speed = 0; // Immediate stop mechanism
-                } else {
-                    // Switch to WALK
-                    this.state = 'WALK';
-                    this.stateTimer = random(200, 600);
-                }
-            }
-
-            // 2. Interaction Logic
-            let dx = mouse.x - this.x;
-            let dy = mouse.y - this.y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            let fearFactor = false;
-
-            if (mouse.click && dist < 300) fearFactor = true; // Panic mode
-
-            if (fearFactor) {
-                // Run away fast
-                this.state = 'WALK'; // Force walk
-                this.targetAngle = Math.atan2(dy, dx) + Math.PI;
-                this.speed = this.maxSpeed * 2.5;
-            } else if (dist < 200 && this.state === 'WALK') {
-                // Attract to mouse
-                this.targetAngle = Math.atan2(dy, dx);
-            } else if (this.state === 'WALK') {
-                // Random wandering wiggle
-                if (Math.random() < 0.05) {
-                    this.targetAngle += random(-1, 1);
-                }
-            }
-
-            // 3. Physics & Smooth Rotation
-            if (this.state === 'WALK' || fearFactor) {
-                // Smooth acceleration
-                if (this.speed < this.maxSpeed) this.speed += this.acceleration;
-                
-                // Smooth rotation
-                let diff = this.targetAngle - this.angle;
-                while (diff < -Math.PI) diff += Math.PI * 2;
-                while (diff > Math.PI) diff -= Math.PI * 2;
-                this.angle += diff * 0.1;
-
-                // Move
-                this.x += Math.cos(this.angle) * this.speed;
-                this.y += Math.sin(this.angle) * this.speed;
-
-                // Animate Legs (Speed dependent)
-                this.walkCycle += this.speed * 0.2;
-            } else {
-                // Decelerate to 0
-                this.speed *= 0.8; 
-            }
-
-            // Antennae always twitch
-            this.antennaOffset += 0.5;
-
-            // Screen Wrap
-            if (this.x < -20) this.x = w + 20;
-            if (this.x > w + 20) this.x = -20;
-            if (this.y < -20) this.y = h + 20;
-            if (this.y > h + 20) this.y = -20;
-        }
-
-        draw() {
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle + Math.PI / 2); // Rotate to face up relative to calc
-            const s = this.size;
-
-            // Shadow (Soft blur underneath)
-            ctx.fillStyle = "rgba(0,0,0,0.15)";
-            ctx.beginPath();
-            ctx.ellipse(0, 2*s, 3*s, 8*s, 0, 0, Math.PI*2);
-            ctx.fill();
-
-            // --- LEGS (Tripod Gait) ---
-            // Real ants use tripod: Legs R1, L2, R3 move together, L1, R2, L3 support.
-            ctx.strokeStyle = "#2a1a0a";
-            ctx.lineWidth = 0.8 * s;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-
-            const walkVal = this.walkCycle;
-            
-            // Helper for jointed legs
-            const drawLeg = (side, yPos, length, phaseOffset) => {
-                // Calculate movement based on phase
-                const move = Math.sin(walkVal + phaseOffset) * (this.speed * 0.5);
-                
-                // Joint calculations (Femur & Tibia)
-                const startX = (side === 'left' ? -2 : 2) * s;
-                const elbowX = (side === 'left' ? -6 : 6) * s;
-                const footX  = (side === 'left' ? -9 : 9) * s;
-                
-                // Dynamic Y positions simulating stepping
-                const currentElbowY = yPos - Math.abs(move) * 2; // Knee goes up
-                const currentFootY = yPos + move * 4; // Foot moves forward/back
-
-                ctx.beginPath();
-                ctx.moveTo(startX, yPos);
-                ctx.lineTo(elbowX, currentElbowY); // Femur
-                ctx.lineTo(footX, currentFootY);   // Tibia
-                ctx.stroke();
-            };
-
-            // Right Side Legs
-            drawLeg('right', -4*s, 8, 0);       // R1 (Front)
-            drawLeg('right', 0, 8, Math.PI);    // R2 (Mid) - Opposite Phase
-            drawLeg('right', 4*s, 9, 0);        // R3 (Back)
-
-            // Left Side Legs
-            drawLeg('left', -4*s, 8, Math.PI);  // L1 (Front) - Opposite Phase
-            drawLeg('left', 0, 8, 0);           // L2 (Mid)
-            drawLeg('left', 4*s, 9, Math.PI);   // L3 (Back) - Opposite Phase
-
-            // --- BODY (Glossy Segments) ---
-            const grad = ctx.createRadialGradient(-2*s, -2*s, 0, 0, 0, 10*s);
-            grad.addColorStop(0, "#5e4b35"); // Highlight
-            grad.addColorStop(0.5, "#2a1a0a"); // Base
-            grad.addColorStop(1, "#0f0802"); // Shadow
-
-            ctx.fillStyle = grad;
-
-            // 1. Abdomen (Rear - Large)
-            ctx.beginPath();
-            ctx.ellipse(0, 5*s, 3.5*s, 5*s, 0, 0, Math.PI*2);
-            ctx.fill();
-
-            // 2. Thorax (Middle - Thin)
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 1.8*s, 2.5*s, 0, 0, Math.PI*2);
-            ctx.fill();
-
-            // 3. Head (Front)
-            ctx.beginPath();
-            // Complex head shape
-            ctx.moveTo(0, -6*s);
-            ctx.bezierCurveTo(3*s, -6*s, 2.5*s, -2.5*s, 0, -2.5*s); // Right cheek
-            ctx.bezierCurveTo(-2.5*s, -2.5*s, -3*s, -6*s, 0, -6*s); // Left cheek
-            ctx.fill();
-
-            // --- DETAILS ---
-            
-            // Mandibles (Jaws)
-            ctx.strokeStyle = "#3e2b17";
-            ctx.lineWidth = 1 * s;
-            ctx.beginPath();
-            ctx.moveTo(1*s, -5.5*s);
-            ctx.quadraticCurveTo(2*s, -7.5*s, 0.5*s, -8*s); // Right Jaw
-            ctx.moveTo(-1*s, -5.5*s);
-            ctx.quadraticCurveTo(-2*s, -7.5*s, -0.5*s, -8*s); // Left Jaw
-            ctx.stroke();
-
-            // Antennae (Twitching)
-            ctx.strokeStyle = "#2a1a0a";
-            ctx.lineWidth = 0.5 * s;
-            
-            // Random twitch calculation
-            const twitchL = Math.sin(this.antennaOffset * 0.8) * 0.2;
-            const twitchR = Math.sin(this.antennaOffset * 0.9 + 1) * 0.2;
-
-            ctx.beginPath();
-            // Left Antenna (elbow joint)
-            ctx.moveTo(-1.5*s, -5*s);
-            ctx.lineTo(-4*s, -7*s + twitchL); 
-            ctx.lineTo(-6*s, -5*s + twitchL * 5); 
-            ctx.stroke();
-
-            // Right Antenna
-            ctx.beginPath();
-            ctx.moveTo(1.5*s, -5*s);
-            ctx.lineTo(4*s, -7*s + twitchR);
-            ctx.lineTo(6*s, -5*s + twitchR * 5);
-            ctx.stroke();
-
-            // Eyes
-            ctx.fillStyle = "black";
-            ctx.beginPath();
-            ctx.arc(-1.8*s, -5*s, 0.4*s, 0, Math.PI*2);
-            ctx.arc(1.8*s, -5*s, 0.4*s, 0, Math.PI*2);
-            ctx.fill();
-
-            ctx.restore();
-        }
+        return result;
     }
 
-    // --- MAIN LOOP ---
-    for(let i=0; i<ANT_COUNT; i++) ants.push(new Ant());
+    // Phase 1: Hacking Animation
+    function hackingSequence() {
+        let count = 0;
+        const interval = setInterval(() => {
+            consoleDiv.innerHTML += `> CONNECTING TO SERVER... ${makeId(10)}<br>`;
+            consoleDiv.innerHTML += `> BYPASSING FIREWALL... [OK]<br>`;
+            consoleDiv.innerHTML += `> BRUTE FORCING HASH... ${makeId(20)}<br>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            count++;
+            if(count > 20) {
+                clearInterval(interval);
+                injectPasswordPhase();
+            }
+        }, 100);
+    }
 
-    function animate() {
-        ctx.clearRect(0, 0, w, h);
+    // Phase 2: Inject Password "NIHAN"
+    function injectPasswordPhase() {
+        consoleDiv.innerHTML = ""; // Clear screen
+        passArea.style.display = "block";
         
-        // Draw Faint Watermark
-        ctx.save();
-        ctx.translate(w/2, h/2);
-        ctx.rotate(-Math.PI/12);
-        ctx.font = "bold 100px sans-serif";
-        ctx.fillStyle = "rgba(0,0,0,0.03)";
-        ctx.textAlign = "center";
-        ctx.fillText("NIHAN CODE", 0, 0);
-        ctx.restore();
+        let password = "NIHAN";
+        let i = 0;
 
-        // Update Ants
-        ants.forEach(ant => {
-            ant.update();
-            ant.draw();
-        });
-
-        requestAnimationFrame(animate);
+        setTimeout(() => {
+            const typeInterval = setInterval(() => {
+                passText.innerText += password.charAt(i);
+                // Play sound effect logic here if needed
+                i++;
+                if (i >= password.length) {
+                    clearInterval(typeInterval);
+                    setTimeout(accessGrantedPhase, 800);
+                }
+            }, 300); // Typing speed
+        }, 500);
     }
-    animate();
+
+    // Phase 3: Access Granted
+    function accessGrantedPhase() {
+        passArea.style.display = "none";
+        accessMsg.style.display = "block";
+        
+        // Flash effect background
+        document.body.style.backgroundColor = "#001100";
+        
+        setTimeout(() => {
+            accessMsg.style.display = "none";
+            showMysteryBox();
+        }, 2000);
+    }
+
+    // Phase 4: Show the Box
+    function showMysteryBox() {
+        document.body.style.backgroundColor = "black";
+        consoleDiv.style.opacity = "0.1"; // Dim background logs
+        consoleDiv.innerHTML = "> SYSTEM UNLOCKED<br>> REWARD AVAILABLE<br>> CLICK THE BOX TO CLAIM...";
+        
+        box.style.display = "block";
+    }
+
+    // Phase 5: The Prank
+    box.addEventListener('click', () => {
+        box.style.display = "none";
+        consoleDiv.style.display = "none"; // Hide everything else
+        document.body.style.backgroundColor = "white"; // Flash white
+        
+        setTimeout(() => {
+            document.body.style.backgroundColor = "black";
+            finalText.style.display = "block";
+        }, 100);
+    });
+
+    // Start everything
+    window.onload = hackingSequence;
 
 </script>
 
