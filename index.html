@@ -3,26 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYSTEM OVERRIDE // NIHAN</title>
+    <title>NIHAN_AI_V4.0 // SYSTEM FAILURE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Nosifer&family=Rubik+Glitch&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- General Styling --- */
+        /* --- CORE SETTINGS --- */
         body {
             margin: 0;
             padding: 0;
-            background-color: black;
+            background-color: #000;
             color: #0f0;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Share Tech Mono', monospace;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
             user-select: none;
         }
 
-        /* --- Hacking Logs --- */
-        #console {
+        /* --- BACKGROUND MATRIX EFFECT --- */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        #console-log {
             position: absolute;
             top: 0;
             left: 0;
@@ -30,205 +44,263 @@
             height: 100%;
             padding: 20px;
             box-sizing: border-box;
-            font-size: 14px;
-            opacity: 0.7;
+            color: rgba(0, 255, 0, 0.4);
+            font-size: 12px;
             z-index: 1;
-            overflow: hidden;
             white-space: pre-wrap;
+            overflow: hidden;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        /* --- UI CONTAINER --- */
+        #main-container {
+            z-index: 10;
+            position: relative;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* --- PASSWORD INPUT PHASE --- */
+        .cyber-input {
+            border: 2px solid #0f0;
+            background: rgba(0, 20, 0, 0.9);
+            color: #0f0;
+            padding: 15px 30px;
+            font-size: 25px;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 0 20px #0f0, inset 0 0 10px #0f0;
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        /* --- THE ADVANCED GIFT BOX --- */
+        .gift-container {
+            display: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .mystery-box {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #330000, #000);
+            border: 4px solid #ff0033;
+            box-shadow: 0 0 50px #ff0033, inset 0 0 30px #ff0033;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: heartbeat 0.8s infinite;
+            position: relative;
+            margin: 0 auto;
+            transform-style: preserve-3d;
+        }
+
+        .box-text {
+            color: #fff;
+            font-family: 'Rubik Glitch', cursive; /* Scary tech font */
+            font-size: 22px;
+            text-align: center;
+            text-shadow: 2px 2px 0px #ff0033;
+            z-index: 2;
             pointer-events: none;
         }
 
-        /* --- Central Stage --- */
-        #stage {
-            z-index: 10;
-            text-align: center;
-            position: relative;
-        }
-
-        /* --- Password Input Style --- */
-        .input-box {
-            border: 2px solid #0f0;
-            padding: 10px 20px;
-            font-size: 24px;
-            background: rgba(0, 20, 0, 0.9);
-            box-shadow: 0 0 15px #0f0;
-            display: none;
-        }
-
-        /* --- Access Granted --- */
-        #access-msg {
-            font-size: 40px;
-            font-weight: bold;
-            color: #0f0;
-            text-shadow: 0 0 20px #0f0;
-            border: 4px solid #0f0;
-            padding: 20px;
-            display: none;
-            animation: blink 0.2s infinite;
-        }
-
-        /* --- The Mysterious Box (SCARY VERSION) --- */
-        #mystery-box {
-            width: 120px;
-            height: 120px;
-            background: #ff0000;
-            border: 3px solid white;
-            box-shadow: 0 0 50px red, inset 0 0 20px black;
-            cursor: pointer;
-            display: none;
-            /* More intense, faster pulse animation */
-            animation: scaryPulse 0.1s infinite alternate; 
-            position: relative;
-        }
-        #mystery-box::before {
-            content: 'CLICK NOW'; /* Changed text */
+        /* Warning Tape effect around the box */
+        .mystery-box::before {
+            content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            text-shadow: 2px 2px 4px black;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border: 2px dashed yellow;
+            animation: spin 10s linear infinite;
         }
 
-        /* --- The Final Message (SCARY VERSION) --- */
-        #final-text {
+        /* --- THE JUMP SCARE REVEAL --- */
+        #scare-content {
             display: none;
-            font-size: 100px; /* Larger text */
-            font-weight: 900;
-            color: red;
-            text-transform: uppercase;
-            text-shadow: 4px 4px 0px white, 0 0 80px red;
-            /* More violent shake */
-            animation: violentShake 0.1s infinite;
+            width: 100%;
         }
 
-        /* --- Animations --- */
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-        /* Faster, more intense pulse for the box */
-        @keyframes scaryPulse { 
-            0% { transform: scale(1); } 
-            100% { transform: scale(1.15); } 
+        .scare-text {
+            font-family: 'Nosifer', cursive; /* Dripping blood font */
+            font-size: 80px;
+            color: #ff0000;
+            text-shadow: 4px 4px 0 #fff, 0 0 50px red;
+            animation: violent-shake 0.15s infinite;
+            line-height: 1.2;
         }
-        /* More violent shake for final text */
-        @keyframes violentShake {
+
+        .sub-scare {
+            font-family: 'Share Tech Mono', monospace;
+            color: white;
+            font-size: 20px;
+            margin-top: 20px;
+            letter-spacing: 5px;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes heartbeat {
+            0% { transform: scale(1); box-shadow: 0 0 30px #ff0033; }
+            50% { transform: scale(1.1); box-shadow: 0 0 80px #ff0033; }
+            100% { transform: scale(1); box-shadow: 0 0 30px #ff0033; }
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @keyframes violent-shake {
             0% { transform: translate(2px, 2px) rotate(0deg); }
-            25% { transform: translate(-2px, -4px) rotate(-2deg); }
-            50% { transform: translate(-6px, 0px) rotate(2deg); }
-            75% { transform: translate(6px, 4px) rotate(0deg); }
-            100% { transform: translate(2px, -2px) rotate(2deg); }
+            25% { transform: translate(-4px, -4px) rotate(-2deg); }
+            50% { transform: translate(4px, 0px) rotate(2deg); }
+            75% { transform: translate(-2px, 4px) rotate(0deg); }
+            100% { transform: translate(2px, -2px) rotate(-1deg); }
         }
-        /* Flicker effect for background */
-        @keyframes bgFlicker {
-            0% { background-color: black; }
-            49% { background-color: black; }
-            50% { background-color: #200000; }
-            99% { background-color: #200000; }
-            100% { background-color: black; }
+
+        @keyframes strobe {
+            0% { background-color: #000; }
+            50% { background-color: #300; }
+            100% { background-color: #000; }
         }
+        
+        .strobe-bg {
+            animation: strobe 0.1s infinite;
+        }
+
+        /* Glitch Text Effect */
+        .glitch-text {
+            position: relative;
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .glitch-text::before {
+            left: 2px; text-shadow: -1px 0 #ff00c1; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px; text-shadow: -1px 0 #00fff9; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="console"></div>
+    <div class="scanlines"></div>
+    <div id="console-log"></div>
 
-    <div id="stage">
-        <div id="password-area" class="input-box">PASSWORD: <span id="pass-text"></span><span class="cursor">_</span></div>
-        <div id="access-msg">ACCESS GRANTED</div>
-        <div id="mystery-box"></div>
-        <div id="final-text">FUCK YOU</div>
+    <div id="main-container">
+        <div id="password-box" class="cyber-input">
+            USER: <span id="typed-pass"></span><span style="animation:blink 0.5s infinite">_</span>
+        </div>
+
+        <div id="gift-area" class="gift-container" onclick="triggerScare()">
+            <div class="mystery-box">
+                <div class="box-text">DO NOT<br>TOUCH</div>
+            </div>
+            <p style="color: red; margin-top: 20px; font-weight: bold; animation: blink 0.5s infinite;">⚠️ DANGER: HIGH VOLTAGE ⚠️</p>
+        </div>
+
+        <div id="scare-content">
+            <div class="scare-text">FUCK<br>YOU</div>
+            <div class="sub-scare">NIHAN SAYS HELLO</div>
+        </div>
     </div>
 
 <script>
-    const consoleDiv = document.getElementById('console');
-    const passArea = document.getElementById('password-area');
-    const passText = document.getElementById('pass-text');
-    const accessMsg = document.getElementById('access-msg');
-    const box = document.getElementById('mystery-box');
-    const finalText = document.getElementById('final-text');
+    // System Variables
+    const consoleLog = document.getElementById('console-log');
+    const passBox = document.getElementById('password-box');
+    const typedPass = document.getElementById('typed-pass');
+    const giftArea = document.getElementById('gift-area');
+    const scareContent = document.getElementById('scare-content');
 
-    function makeId(length) {
-        let result = '';
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*';
-        for (let i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        return result;
+    // --- HACKER TEXT GENERATOR ---
+    function randomStr(len) {
+        let text = "";
+        let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
+        for (let i = 0; i < len; i++) text += chars.charAt(Math.floor(Math.random() * chars.length));
+        return text;
     }
 
-    // Phase 1: Hacking Animation
-    function hackingSequence() {
-        let count = 0;
-        const interval = setInterval(() => {
-            consoleDiv.innerHTML += `> CONNECTING TO SERVER... ${makeId(10)}<br>`;
-            consoleDiv.innerHTML += `> BYPASSING FIREWALL... [OK]<br>`;
-            consoleDiv.innerHTML += `> BRUTE FORCING HASH... ${makeId(20)}<br>`;
-            consoleDiv.scrollTop = consoleDiv.scrollHeight;
-            count++;
-            if(count > 20) {
-                clearInterval(interval);
-                injectPasswordPhase();
+    // --- PHASE 1: BOOT SEQUENCE ---
+    function bootSystem() {
+        let lines = 0;
+        let maxLines = 30;
+        let bootInterval = setInterval(() => {
+            consoleLog.innerHTML += `> SYSTEM_OVERRIDE... [${randomStr(8)}]<br>`;
+            consoleLog.innerHTML += `> BYPASSING FIREWALL... SUCCESS<br>`;
+            consoleLog.innerHTML += `> UPLOADING VIRUS... ${Math.floor(Math.random()*100)}%<br>`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+            lines++;
+            
+            if(lines > maxLines) {
+                clearInterval(bootInterval);
+                consoleLog.innerHTML = ""; // Clear for focus
+                injectPassword();
             }
-        }, 100);
+        }, 80);
     }
 
-    // Phase 2: Inject Password "NIHAN"
-    function injectPasswordPhase() {
-        consoleDiv.innerHTML = "";
-        passArea.style.display = "block";
-        
-        let password = "NIHAN";
+    // --- PHASE 2: PASSWORD INJECTION ---
+    function injectPassword() {
+        passBox.style.display = "inline-block";
+        let pass = "NIHAN";
         let i = 0;
-
+        
         setTimeout(() => {
-            const typeInterval = setInterval(() => {
-                passText.innerText += password.charAt(i);
+            let typeInterval = setInterval(() => {
+                typedPass.innerText += pass.charAt(i);
                 i++;
-                if (i >= password.length) {
+                if(i >= pass.length) {
                     clearInterval(typeInterval);
-                    setTimeout(accessGrantedPhase, 800);
+                    setTimeout(() => {
+                        passBox.style.background = "#0f0";
+                        passBox.style.color = "#000";
+                        passBox.innerHTML = "ACCESS GRANTED";
+                        setTimeout(showGift, 1500);
+                    }, 500);
                 }
-            }, 300);
+            }, 200);
         }, 500);
     }
 
-    // Phase 3: Access Granted
-    function accessGrantedPhase() {
-        passArea.style.display = "none";
-        accessMsg.style.display = "block";
-        document.body.style.backgroundColor = "#001100";
+    // --- PHASE 3: SHOW THE TRAP ---
+    function showGift() {
+        passBox.style.display = "none";
+        consoleLog.style.opacity = "0.2";
+        // Background turns slightly red
+        document.body.style.background = "radial-gradient(circle, #220000, #000)";
         
-        setTimeout(() => {
-            accessMsg.style.display = "none";
-            showMysteryBox();
-        }, 2000);
+        consoleLog.innerHTML = `> WARNING: UNKNOWN OBJECT DETECTED<br>> SCANNING... FAILED<br>> PROTOCOL: DO NOT OPEN`;
+        
+        giftArea.style.display = "block";
     }
 
-    // Phase 4: Show the Box (Scarier)
-    function showMysteryBox() {
-        document.body.style.animation = "bgFlicker 0.1s infinite"; // Start BG flicker
-        consoleDiv.style.opacity = "0.2";
-        consoleDiv.innerHTML = "> SYSTEM CRITICAL<br>> UNKNOWN ENTITY DETECTED<br>> INITIATE CONTAINMENT PROTOCOL...";
+    // --- PHASE 4: THE SCARE (ACTION) ---
+    function triggerScare() {
+        // 1. Mobile Vibration (If supported)
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200, 100, 500]); 
+        }
+
+        // 2. Visual Chaos
+        giftArea.style.display = "none";
+        consoleLog.style.display = "none";
+        document.body.className = "strobe-bg"; // Flashing background
         
-        box.style.display = "block";
+        scareContent.style.display = "block";
+
+        // 3. Optional: Redirect or reset after 5 seconds
+        setTimeout(() => {
+            alert("SYSTEM CRASHED BY NIHAN");
+            location.reload();
+        }, 5000);
     }
 
-    // Phase 5: The Prank (Scarier)
-    box.addEventListener('click', () => {
-        box.style.display = "none";
-        consoleDiv.style.display = "none";
-        document.body.style.animation = "none"; // Stop flicker
-        document.body.style.backgroundColor = "red"; // Intense red flash
-        
-        setTimeout(() => {
-            document.body.style.backgroundColor = "black";
-            finalText.style.display = "block";
-        }, 150); // Faster flash
-    });
-
-    window.onload = hackingSequence;
+    // Start on Load
+    window.onload = bootSystem;
 
 </script>
 
