@@ -4,530 +4,264 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Soulmate OS Titanium</title>
+    <title>Eternal Peace</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Outfit:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <style>
         /* =========================================
-           1. SYSTEM CORE
+           CORE AESTHETICS
            ========================================= */
-        :root {
-            --bg-dark: #050505;
-            --glass: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.12);
-            --neon-blue: #00f2fe;
-            --neon-pink: #fe0069;
-            --neon-green: #00ff88;
-            --font-main: 'Outfit', sans-serif;
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 
         body {
-            font-family: var(--font-main);
             background: #000;
-            color: #fff;
             height: 100dvh;
             overflow: hidden;
-            display: flex; justify-content: center;
-            background: radial-gradient(circle at 50% 10%, #1a0b2e, #000);
-        }
-
-        /* Particles */
-        .dust { position: absolute; width: 100%; height: 100%; background: url('http://www.script-tutorials.com/demos/360/images/stars.png'); opacity: 0.3; animation: space 60s linear infinite; pointer-events: none; }
-        @keyframes space { from {background-position: 0 0;} to {background-position: -1000px 1000px;} }
-
-        /* OS FRAME */
-        .os-frame {
-            width: 100%; height: 100%; position: relative;
-            background: rgba(0,0,0,0.3); backdrop-filter: blur(15px);
-            overflow: hidden; display: flex; flex-direction: column;
-        }
-
-        @media (min-width: 600px) {
-            .os-frame {
-                width: 410px; height: 92vh; margin-top: 4vh;
-                border-radius: 48px; border: 6px solid #222;
-                box-shadow: 0 0 100px rgba(0,0,0,0.8);
-            }
+            font-family: 'Outfit', sans-serif;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* =========================================
-           2. NAVIGATION & ANIMATIONS
+           BACKGROUND & DRONE FX
            ========================================= */
-        .screen {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column;
-            background: #000;
-            opacity: 0; pointer-events: none; transform: scale(1.1);
-            transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        #worldLayer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            transition: opacity 1.5s ease-in-out;
             z-index: 0;
+            opacity: 0; /* Starts hidden for fade effect */
         }
         
-        .screen.active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 100; }
-        .screen.home.active { background: transparent; z-index: 50; }
-
-        /* HEADER */
-        .status-bar { padding: 10px 25px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #aaa; z-index: 200; }
-
-        /* HOME GRID */
-        .home-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
-        .home-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 20px; align-content: start;
+        /* The "Drone" Movement Animation */
+        .drone-move {
+            animation: kenBurns 20s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
         }
 
-        .app-icon {
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
-            cursor: pointer; transition: 0.2s; position: relative; z-index: 200;
+        @keyframes kenBurns {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.2) translate(-2%, -1%); }
         }
-        .app-icon:active { transform: scale(0.85); }
 
-        .icon-box {
-            width: 62px; height: 62px; border-radius: 18px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 26px; color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(5px);
+        /* Overlay Darken */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 90%);
+            z-index: 1; pointer-events: none;
         }
-        .icon-label { font-size: 11px; font-weight: 500; text-shadow: 0 2px 4px #000; color: #eee; }
-
-        /* COLORS */
-        .bg-blue { background: linear-gradient(135deg, #4facfe, #00f2fe) !important; }
-        .bg-pink { background: linear-gradient(135deg, #ff9a9e, #fe0069) !important; }
-        .bg-purple { background: linear-gradient(135deg, #a18cd1, #fbc2eb) !important; }
-        .bg-green { background: linear-gradient(135deg, #43e97b, #38f9d7) !important; }
-        .bg-orange { background: linear-gradient(135deg, #fa709a, #fee140) !important; }
-        .bg-dark { background: linear-gradient(135deg, #434343, #000000) !important; }
-
-        /* COMMON APP HEADER */
-        .app-header {
-            height: 60px; padding: 0 15px;
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(18, 18, 18, 0.95); border-bottom: 1px solid #333;
-            z-index: 150;
-        }
-        .back-btn { width: 35px; height: 35px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
         /* =========================================
-           3. APP SPECIFIC UI
+           CONTENT UI
            ========================================= */
+        .content-wrapper {
+            position: relative; z-index: 10;
+            text-align: center;
+            width: 90%; max-width: 600px;
+            padding: 30px;
+        }
+
+        .location-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s;
+        }
+
+        .quote-box {
+            font-family: 'Cinzel', serif;
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.5;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            min-height: 120px;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; /* Controlled by JS */
+            transition: opacity 1s ease;
+        }
+
+        .controls {
+            position: absolute; bottom: 40px; right: 30px; z-index: 20;
+            display: flex; gap: 15px;
+        }
         
-        /* CHAT */
-        .chat-feed { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 100px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; animation: zoomIn 0.3s; }
-        .msg.ai { background: #222; color: #ddd; border-bottom-left-radius: 4px; }
-        .msg.user { background: #00f2fe; color: #000; align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; }
-        .chat-bar { position: absolute; bottom: 0; width: 100%; padding: 12px; background: #111; display: flex; gap: 10px; padding-bottom: max(15px, env(safe-area-inset-bottom)); border-top: 1px solid #333; }
-        .chat-input { flex: 1; background: #222; border: none; padding: 10px 20px; border-radius: 30px; color: white; outline: none; }
+        .glass-btn {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s;
+        }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.1); }
+        .glass-btn:active { transform: scale(0.9); }
 
-        /* CALCULATOR */
-        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; flex: 1; align-content: end; }
-        .calc-screen { width: 100%; padding: 20px; text-align: right; font-size: 50px; font-weight: 300; color: #fff; background: transparent; border: none; }
-        .c-btn { height: 70px; border-radius: 50%; border: none; font-size: 24px; font-weight: 600; cursor: pointer; background: #333; color: #fff; }
-        .c-btn.op { background: #fe0069; color: #fff; }
-        .c-btn.zero { grid-column: span 2; border-radius: 40px; }
-
-        /* DRAWING */
-        .canvas-area { flex: 1; background: #fff; cursor: crosshair; touch-action: none; }
-        .draw-tools { height: 60px; background: #222; display: flex; justify-content: space-around; align-items: center; }
-        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
-
-        /* TIC TAC TOE */
-        .ttt-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 300px; margin: 50px auto; }
-        .ttt-cell { height: 90px; background: #222; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 800; cursor: pointer; border: 2px solid #333; }
-        .ttt-cell.x { color: #fe0069; text-shadow: 0 0 15px #fe0069; }
-        .ttt-cell.o { color: #00f2fe; text-shadow: 0 0 15px #00f2fe; }
-
-        /* TO DO LIST */
-        .todo-input-area { display: flex; padding: 15px; gap: 10px; border-bottom: 1px solid #333; }
-        .todo-list { list-style: none; padding: 20px; overflow-y: auto; flex: 1; }
-        .todo-item { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s; }
-        .todo-item.done span { text-decoration: line-through; color: #666; }
-
-        /* MEMORY GAME */
-        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; width: 100%; max-width: 350px; margin: 20px auto; }
-        .mem-card { height: 70px; background: #00f2fe; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 30px; transform-style: preserve-3d; transition: 0.3s; }
-        .mem-card.flipped { background: #fff; transform: rotateY(180deg); }
-        .mem-card.matched { opacity: 0; pointer-events: none; }
-        .mem-card .content { display: none; }
-        .mem-card.flipped .content { display: block; }
-
-        /* BREATHING */
-        .breath-circle { width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(#00f2fe, transparent); opacity: 0.5; animation: breath 8s infinite ease-in-out; margin: 80px auto; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; font-weight: 700; }
-        @keyframes breath { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.8); opacity: 0.2; } }
+        /* Initial Loader */
+        #loader {
+            position: absolute; inset: 0; background: #000; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 20px; letter-spacing: 5px;
+            transition: opacity 1s;
+        }
 
     </style>
-    
-    <script type="importmap">
-      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
-    </script>
 </head>
 <body>
 
-    <div class="dust"></div>
+    <div id="loader">LOADING WORLD...</div>
 
-    <div class="os-frame">
-        <div class="status-bar">
-            <span>Soulmate OS</span>
-            <span><i class="fa-solid fa-wifi"></i> 100%</span>
+    <div id="worldLayer" class="drone-move"></div>
+    <div class="overlay"></div>
+
+    <div class="content-wrapper">
+        <div class="location-badge">
+            <i class="fa-solid fa-location-dot" style="color:#00f2fe;"></i>
+            <span id="locationText">SPIRIT REALM</span>
         </div>
         
-        <div class="screen home active" id="homeScreen">
-            <div style="padding: 40px 20px 10px; text-align: center;">
-                <h1 style="font-size: 38px; font-weight: 800;">12:45</h1>
-                <p style="opacity: 0.6; font-size: 14px;">Sunday, January 15</p>
-            </div>
-
-            <div class="home-scroll">
-                <div class="home-grid">
-                    <div class="app-icon" onclick="openApp('appChat')">
-                        <div class="icon-box bg-blue"><i class="fa-solid fa-comments"></i></div>
-                        <span class="icon-label">Chat</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appTogether')">
-                        <div class="icon-box bg-pink"><i class="fa-solid fa-heart"></i></div>
-                        <span class="icon-label">Together</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appMusic')">
-                        <div class="icon-box bg-purple"><i class="fa-solid fa-music"></i></div>
-                        <span class="icon-label">Music</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appCalc')">
-                        <div class="icon-box bg-dark"><i class="fa-solid fa-calculator"></i></div>
-                        <span class="icon-label">Calc</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appDraw')">
-                        <div class="icon-box bg-orange"><i class="fa-solid fa-paintbrush"></i></div>
-                        <span class="icon-label">Draw</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appTTT')">
-                        <div class="icon-box bg-green"><i class="fa-solid fa-xmarks-lines"></i></div>
-                        <span class="icon-label">TicTacToe</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appMem')">
-                        <div class="icon-box bg-blue"><i class="fa-solid fa-brain"></i></div>
-                        <span class="icon-label">Memory</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appTodo')">
-                        <div class="icon-box bg-pink"><i class="fa-solid fa-list-check"></i></div>
-                        <span class="icon-label">Tasks</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appBreath')">
-                        <div class="icon-box bg-green"><i class="fa-solid fa-lungs"></i></div>
-                        <span class="icon-label">Relax</span>
-                    </div>
-                    <div class="app-icon" onclick="openApp('appCoin')">
-                        <div class="icon-box bg-orange"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
-                        <span class="icon-label">Toss</span>
-                    </div>
-                     <div class="app-icon" onclick="openApp('appGame')">
-                        <div class="icon-box bg-purple"><i class="fa-solid fa-dice"></i></div>
-                        <span class="icon-label">T or D</span>
-                    </div>
-                     <div class="app-icon" onclick="openApp('appOrb')">
-                        <div class="icon-box bg-dark"><i class="fa-solid fa-crystal-ball"></i></div>
-                        <span class="icon-label">Orb</span>
-                    </div>
-                </div>
-            </div>
+        <div class="quote-box" id="quoteText">
+            "Wherever you go, go with all your heart."
         </div>
-
-        <div class="screen" id="appChat">
-            <div class="app-header">
-                <div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div>
-                <h3 style="font-size:16px;">Khona</h3>
-                <div style="width:35px; height:35px; border-radius:50%; background:url('https://i.pinimg.com/736x/82/38/53/8238531eb4313264eb789b71e1fc2224.jpg') center/cover;"></div>
-            </div>
-            <div class="chat-feed" id="chatFeed">
-                <div class="msg ai">Hi Jan! Kemon acho? ❤️</div>
-            </div>
-            <div class="chat-bar">
-                <input type="text" class="chat-input" id="chatInput" placeholder="Message...">
-                <button onclick="window.sendChat()" style="width:40px; height:40px; border-radius:50%; border:none; background:#00f2fe; color:black;"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-        </div>
-
-        <div class="screen" id="appCalc">
-            <div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Calculator</span><div></div></div>
-            <div style="flex:1; display:flex; flex-direction:column;">
-                <input type="text" readonly class="calc-screen" id="calcDisplay" value="0">
-                <div class="calc-grid">
-                    <button class="c-btn" onclick="calcAppend('C')">C</button>
-                    <button class="c-btn" onclick="calcAppend('(')">(</button>
-                    <button class="c-btn" onclick="calcAppend(')')">)</button>
-                    <button class="c-btn op" onclick="calcAppend('/')">÷</button>
-                    <button class="c-btn" onclick="calcAppend('7')">7</button>
-                    <button class="c-btn" onclick="calcAppend('8')">8</button>
-                    <button class="c-btn" onclick="calcAppend('9')">9</button>
-                    <button class="c-btn op" onclick="calcAppend('*')">×</button>
-                    <button class="c-btn" onclick="calcAppend('4')">4</button>
-                    <button class="c-btn" onclick="calcAppend('5')">5</button>
-                    <button class="c-btn" onclick="calcAppend('6')">6</button>
-                    <button class="c-btn op" onclick="calcAppend('-')">-</button>
-                    <button class="c-btn" onclick="calcAppend('1')">1</button>
-                    <button class="c-btn" onclick="calcAppend('2')">2</button>
-                    <button class="c-btn" onclick="calcAppend('3')">3</button>
-                    <button class="c-btn op" onclick="calcAppend('+')">+</button>
-                    <button class="c-btn zero" onclick="calcAppend('0')">0</button>
-                    <button class="c-btn" onclick="calcAppend('.')">.</button>
-                    <button class="c-btn op" onclick="calcResult()">=</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="screen" id="appDraw">
-            <div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Sketchpad</span><div class="back-btn" onclick="clearCanvas()"><i class="fa-solid fa-trash"></i></div></div>
-            <canvas id="drawCanvas" class="canvas-area"></canvas>
-            <div class="draw-tools">
-                <div class="color-dot" style="background:black;" onclick="setColor('black')"></div>
-                <div class="color-dot" style="background:red;" onclick="setColor('red')"></div>
-                <div class="color-dot" style="background:blue;" onclick="setColor('blue')"></div>
-                <div class="color-dot" style="background:green;" onclick="setColor('green')"></div>
-                <div class="color-dot" style="background:white; border:2px solid #ccc;" onclick="setColor('white')"></div> </div>
-        </div>
-
-        <div class="screen" id="appTTT">
-            <div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Tic Tac Toe</span><div class="back-btn" onclick="resetTTT()"><i class="fa-solid fa-rotate"></i></div></div>
-            <div class="ttt-board" id="tttBoard">
-                <div class="ttt-cell" onclick="playTTT(0)"></div>
-                <div class="ttt-cell" onclick="playTTT(1)"></div>
-                <div class="ttt-cell" onclick="playTTT(2)"></div>
-                <div class="ttt-cell" onclick="playTTT(3)"></div>
-                <div class="ttt-cell" onclick="playTTT(4)"></div>
-                <div class="ttt-cell" onclick="playTTT(5)"></div>
-                <div class="ttt-cell" onclick="playTTT(6)"></div>
-                <div class="ttt-cell" onclick="playTTT(7)"></div>
-                <div class="ttt-cell" onclick="playTTT(8)"></div>
-            </div>
-            <p id="tttStatus" style="text-align:center; font-size:20px; color:#00f2fe; font-weight:700;"></p>
-        </div>
-
-        <div class="screen" id="appTodo">
-            <div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Tasks</span><div></div></div>
-            <div class="todo-input-area">
-                <input type="text" id="todoInput" placeholder="Add task..." style="flex:1; padding:10px; background:#222; border:none; color:#fff; border-radius:10px;">
-                <button onclick="addTodo()" style="width:40px; background:#00ff88; border:none; border-radius:10px;"><i class="fa-solid fa-plus"></i></button>
-            </div>
-            <ul class="todo-list" id="todoList"></ul>
-        </div>
-
-        <div class="screen" id="appBreath">
-            <div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Breathe</span><div></div></div>
-            <div class="breath-circle">Breathe</div>
-            <p style="text-align:center; opacity:0.7;">Inhale... Hold... Exhale...</p>
-        </div>
-
-        <div class="screen" id="appMem">
-            <div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Memory</span><div class="back-btn" onclick="initMemory()"><i class="fa-solid fa-rotate"></i></div></div>
-            <div class="memory-grid" id="memGrid"></div>
-        </div>
-
-        <div class="screen" id="appCoin">
-            <div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Coin Toss</span><div></div></div>
-            <div style="flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                <div id="coin" style="width:150px; height:150px; background:gold; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; font-weight:800; border:5px solid orange; box-shadow:0 0 50px gold;">HEADS</div>
-                <button onclick="flipCoin()" style="margin-top:50px; padding:15px 40px; background:#fff; border:none; border-radius:20px; font-weight:bold;">FLIP</button>
-            </div>
-        </div>
-
-        <div class="screen" id="appTogether"><div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Together</span></div><div style="text-align:center; padding:50px;"><h1>❤️ 0 Days</h1></div></div>
-        <div class="screen" id="appMusic"><div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Music</span></div><div style="text-align:center; padding:50px;"><h1>🎵</h1><p>Playing Lofi...</p></div></div>
-        <div class="screen" id="appGame"><div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Truth/Dare</span></div><div style="text-align:center; padding:50px;"><button onclick="alert('DARE: Dance!')" style="padding:20px;">Pick Card</button></div></div>
-        <div class="screen" id="appOrb"><div class="app-header"><div class="back-btn" onclick="goHome()"><i class="fa-solid fa-chevron-left"></i></div><span>Orb</span></div><div style="text-align:center; padding:50px;"><h1 onclick="this.innerText='YES'">TAP ME</h1></div></div>
-
     </div>
 
+    <div class="controls">
+        <div class="glass-btn" onclick="toggleMusic(this)" title="Music">
+            <i class="fa-solid fa-volume-xmark" id="volIcon"></i>
+        </div>
+        <div class="glass-btn" onclick="toggleFullScreen()" title="Immersion">
+            <i class="fa-solid fa-expand"></i>
+        </div>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3" type="audio/mp3">
+    </audio>
+
     <script>
-        // --- NAVIGATION ---
-        function openApp(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(id === 'appDraw') setupCanvas();
-            if(id === 'appMem') initMemory();
-        }
-        function goHome() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('homeScreen').classList.add('active');
-        }
+        /* =========================================
+           DATA: SCENES & QUOTES
+           ========================================= */
+        
+        // High Quality Anime Scenery GIFs (Ghibli/Shinkai Style)
+        const SCENES = [
+            { url: "https://i.pinimg.com/originals/a0/03/49/a0034934827054231b54a760f339199d.gif", name: "Spirit Forest" },
+            { url: "https://i.pinimg.com/originals/e8/34/00/e834006d64949514e83a652a23368297.gif", name: "Rainy Tokyo" },
+            { url: "https://i.pinimg.com/originals/2b/96/1a/2b961a9c4021237a85d2634e568b2006.gif", name: "Lofi Room" },
+            { url: "https://i.pinimg.com/originals/50/e0/69/50e069179d675765c325c88b0a9b8911.gif", name: "Train Journey" },
+            { url: "https://i.pinimg.com/originals/82/34/23/82342372332675e247477610336d376c.gif", name: "Starry Night" },
+            { url: "https://i.pinimg.com/originals/1e/8a/97/1e8a97759b6531390494025b41040332.gif", name: "Magic Castle" }
+        ];
 
-        // --- CALCULATOR ---
-        let calcVal = "";
-        function calcAppend(v) {
-            if(v==='C') calcVal = "";
-            else calcVal += v;
-            document.getElementById('calcDisplay').value = calcVal || "0";
-        }
-        function calcResult() {
-            try { document.getElementById('calcDisplay').value = eval(calcVal); } catch(e) { document.getElementById('calcDisplay').value = "Error"; }
-            calcVal = "";
-        }
+        // Soulmate/Love/Peace Quotes
+        const QUOTES = [
+            "In a sea of people, my eyes will always search for you.",
+            "Peace comes from within. Do not seek it without.",
+            "I look at you and see the rest of my life in front of my eyes.",
+            "Maybe the world isn't so bad after all.",
+            "Even if we are apart, I am always with you.",
+            "Let the rain wash away all the pain of yesterday.",
+            "You are my favorite daydream.",
+            "Silence is sometimes the best answer.",
+            "I want to be the reason you look down at your phone and smile.",
+            "The moon is beautiful tonight, isn't it?"
+        ];
 
-        // --- TIC TAC TOE ---
-        let tttBoard = Array(9).fill(null);
-        let xTurn = true;
-        function playTTT(idx) {
-            if(!tttBoard[idx]) {
-                tttBoard[idx] = xTurn ? 'X' : 'O';
-                renderTTT();
-                xTurn = !xTurn;
-                checkWin();
-                if(!xTurn) setTimeout(aiMove, 500); // Simple AI
-            }
-        }
-        function aiMove() {
-            let empty = tttBoard.map((v, i) => v === null ? i : null).filter(v => v !== null);
-            if(empty.length > 0) {
-                let move = empty[Math.floor(Math.random() * empty.length)];
-                playTTT(move);
-            }
-        }
-        function renderTTT() {
-            const cells = document.querySelectorAll('.ttt-cell');
-            tttBoard.forEach((v, i) => {
-                cells[i].innerText = v || "";
-                cells[i].className = "ttt-cell " + (v ? v.toLowerCase() : "");
-            });
-        }
-        function checkWin() {
-            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            wins.forEach(w => {
-                if(tttBoard[w[0]] && tttBoard[w[0]] === tttBoard[w[1]] && tttBoard[w[0]] === tttBoard[w[2]]) {
-                    document.getElementById('tttStatus').innerText = tttBoard[w[0]] + " WINS!";
-                    tttBoard = Array(9).fill('W'); // Lock board
-                }
-            });
-        }
-        function resetTTT() { tttBoard = Array(9).fill(null); document.getElementById('tttStatus').innerText = ""; renderTTT(); xTurn=true; }
+        /* =========================================
+           SYSTEM LOGIC
+           ========================================= */
+        
+        let sceneIndex = 0;
+        let quoteIndex = 0;
+        const worldLayer = document.getElementById('worldLayer');
+        const locText = document.getElementById('locationText');
+        const qtBox = document.getElementById('quoteText');
+        const loader = document.getElementById('loader');
 
-        // --- DRAWING ---
-        let canvas, ctx, painting = false;
-        function setupCanvas() {
-            canvas = document.getElementById('drawCanvas');
-            ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.offsetWidth;
-            canvas.height = canvas.parentElement.offsetHeight - 60;
-            ctx.lineWidth = 5;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = 'black';
-            
-            // Touch Support
-            canvas.addEventListener('touchstart', startPos);
-            canvas.addEventListener('touchend', endPos);
-            canvas.addEventListener('touchmove', draw);
-            canvas.addEventListener('mousedown', startPos);
-            canvas.addEventListener('mouseup', endPos);
-            canvas.addEventListener('mousemove', draw);
-        }
-        function startPos(e) { painting = true; draw(e); }
-        function endPos() { painting = false; ctx.beginPath(); }
-        function draw(e) {
-            if(!painting) return;
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            let x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-            let y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        }
-        function setColor(c) { ctx.strokeStyle = c; if(c==='white') ctx.lineWidth=15; else ctx.lineWidth=5; }
-        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-        // --- TO DO LIST ---
-        function addTodo() {
-            const val = document.getElementById('todoInput').value;
-            if(!val) return;
-            const li = document.createElement('li');
-            li.className = 'todo-item';
-            li.innerHTML = `<span>${val}</span> <i class="fa-solid fa-trash" onclick="this.parentElement.remove()"></i>`;
-            li.onclick = (e) => { if(e.target.tagName!=='I') li.classList.toggle('done'); };
-            document.getElementById('todoList').appendChild(li);
-            document.getElementById('todoInput').value = "";
-        }
-
-        // --- MEMORY GAME ---
-        const emojis = ['🐶','🐶','🐱','🐱','🐭','🐭','🐹','🐹','🦊','🦊','🐻','🐻','🐼','🐼','🐨','🐨'];
-        let openCards = [];
-        function initMemory() {
-            const grid = document.getElementById('memGrid');
-            grid.innerHTML = "";
-            let shuffled = emojis.sort(() => 0.5 - Math.random());
-            shuffled.forEach(e => {
-                const card = document.createElement('div');
-                card.className = 'mem-card';
-                card.innerHTML = `<span class="content">${e}</span>`;
-                card.onclick = () => flipCard(card);
-                grid.appendChild(card);
-            });
-        }
-        function flipCard(card) {
-            if(card.classList.contains('flipped') || openCards.length >= 2) return;
-            card.classList.add('flipped');
-            openCards.push(card);
-            if(openCards.length === 2) {
-                setTimeout(checkMatch, 800);
-            }
-        }
-        function checkMatch() {
-            if(openCards[0].innerText === openCards[1].innerText) {
-                openCards.forEach(c => c.classList.add('matched'));
-            } else {
-                openCards.forEach(c => c.classList.remove('flipped'));
-            }
-            openCards = [];
-        }
-
-        // --- COIN TOSS ---
-        function flipCoin() {
-            const c = document.getElementById('coin');
-            c.innerText = "";
-            c.style.animation = "spin 1s infinite";
+        // INITIALIZATION
+        window.onload = () => {
+            // Fake Loading time
             setTimeout(() => {
-                c.style.animation = "none";
-                c.innerText = Math.random() > 0.5 ? "HEADS" : "TAILS";
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 1000);
+                
+                // Start the loop
+                changeScene();
+                changeQuote();
+                
+                // Start Intervals
+                setInterval(changeScene, 12000); // Change Scene every 12s
+                setInterval(changeQuote, 6000);  // Change Quote every 6s
+            }, 1500);
+        };
+
+        // FUNCTION: Change Scene with Fade Effect
+        function changeScene() {
+            // 1. Fade Out
+            worldLayer.style.opacity = '0';
+            
+            setTimeout(() => {
+                // 2. Swap Image & Text
+                const s = SCENES[sceneIndex];
+                worldLayer.style.backgroundImage = `url('${s.url}')`;
+                locText.innerText = s.name;
+                
+                // 3. Fade In
+                worldLayer.style.opacity = '1';
+                
+                // Increment Index
+                sceneIndex = (sceneIndex + 1) % SCENES.length;
+            }, 1000); // Wait for fade out
+        }
+
+        // FUNCTION: Change Quote with Fade Effect
+        function changeQuote() {
+            qtBox.style.opacity = '0';
+            
+            setTimeout(() => {
+                // Pick random quote
+                const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+                qtBox.innerText = `"${q}"`;
+                qtBox.style.opacity = '1';
             }, 1000);
         }
 
-    </script>
-
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-        const API_KEY = "AlzaSyCoxQEqblhAH4ZAmSHZljpJbqry7AdT6sY";
-        let chatSession;
-        try {
-            const genAI = new GoogleGenerativeAI(API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            chatSession = model.startChat({ history: [{role:"user", parts:[{text:"You are Khona. Cute wife."}]},{role:"model", parts:[{text:"Meow!"}]}] });
-        } catch(e){}
-
-        window.sendChat = async () => {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if(!text) return;
-            addMsg(text, 'user');
-            input.value = '';
-            try {
-                const result = await chatSession.sendMessage(text);
-                addMsg(result.response.text(), 'ai');
-            } catch(e) { addMsg("Net Error 😿", 'ai'); }
-        };
-
-        function addMsg(text, sender) {
-            const feed = document.getElementById('chatFeed');
-            const div = document.createElement('div');
-            div.className = `msg ${sender}`;
-            div.innerText = text;
-            feed.appendChild(div);
-            feed.scrollTop = feed.scrollHeight;
+        // UTILS: Music & Fullscreen
+        function toggleMusic(btn) {
+            const audio = document.getElementById('bgMusic');
+            const icon = document.getElementById('volIcon');
+            
+            if (audio.paused) {
+                audio.volume = 0.5;
+                audio.play();
+                icon.className = "fa-solid fa-volume-high";
+                btn.style.borderColor = "#00f2fe";
+            } else {
+                audio.pause();
+                icon.className = "fa-solid fa-volume-xmark";
+                btn.style.borderColor = "rgba(255,255,255,0.2)";
+            }
         }
-    </script>
 
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+    </script>
 </body>
 </html>
