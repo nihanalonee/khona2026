@@ -3,762 +3,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f0c29">
-    <title>Soulmate OS | Advanced AI Companion</title>
+    <meta name="theme-color" content="#000000">
+    <title>Soulmate Chat</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 
     <style>
         /* =========================================
-           1. CORE VARIABLES & RESET
+           1. MESSENGER / INSTAGRAM THEME VARIABLES
            ========================================= */
         :root {
-            /* Colors - Dynamic via JS */
-            --primary: #ff4d6d;
-            --primary-dim: rgba(255, 77, 109, 0.2);
-            --gradient: linear-gradient(135deg, #ff4d6d, #ff8fa3);
-            
-            /* Backgrounds */
-            --bg-dark: #050507;
-            --bg-panel: rgba(20, 20, 25, 0.7);
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.15);
-
-            /* Text */
+            /* Messenger/Insta Colors */
+            --bg-color: #000000;
+            --surface-color: #1c1c1d;
+            --input-bg: #2c2c2e;
             --text-main: #ffffff;
-            --text-muted: #888899;
-            --text-highlight: #ff4d6d;
-
-            /* Chat Bubbles */
-            --bubble-user: linear-gradient(135deg, var(--primary), #ff8fa3);
-            --bubble-ai: rgba(255, 255, 255, 0.08);
-
-            /* System */
-            --radius-xl: 30px;
-            --radius-md: 16px;
-            --radius-sm: 8px;
-            --shadow-glow: 0 0 20px var(--primary-dim);
-            --font-main: 'Plus Jakarta Sans', sans-serif;
-            --font-code: 'JetBrains Mono', monospace;
-            --anim-speed: 0.3s;
+            --text-sub: #8e8e93;
+            
+            /* Dynamic Gradients (Will change via JS) */
+            --primary-grad: linear-gradient(to right, #ff3366, #bc2a8d); /* Insta Default */
+            
+            /* Dimensions */
+            --radius-bubble: 22px;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
+
         body {
             font-family: var(--font-main);
-            background-color: var(--bg-dark);
+            background: var(--bg-color);
             color: var(--text-main);
-            height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             display: flex;
-            align-items: center;
             justify-content: center;
-            user-select: none;
-        }
-
-        /* Canvas Background */
-        #particleCanvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            opacity: 0.6;
         }
 
         /* =========================================
-           2. APP SHELL & LAYOUT
+           2. APP SHELL (Mobile UI)
            ========================================= */
-        .os-container {
+        .app-frame {
             width: 100%; height: 100%;
             position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            transition: var(--anim-speed);
+            background: var(--bg-color);
+            display: flex; flex-direction: column;
+            overflow: hidden;
         }
 
         @media (min-width: 600px) {
-            .os-container {
-                width: 450px;
-                height: 90vh;
-                border-radius: var(--radius-xl);
-                border: 1px solid var(--glass-border);
-                box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+            .app-frame {
+                width: 400px; height: 95vh;
+                margin-top: 2.5vh;
+                border-radius: 35px;
+                border: 1px solid #333;
+                box-shadow: 0 0 50px rgba(0,0,0,0.5);
             }
         }
 
-        /* Loading Screen */
-        .loader-screen {
-            position: absolute; inset: 0;
-            background: #000;
-            z-index: 999;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            transition: opacity 0.8s ease;
-        }
-        .loader-logo { font-size: 40px; margin-bottom: 20px; animation: pulse 2s infinite; color: var(--primary); }
-        .loader-bar { width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
-        .loader-progress { width: 0%; height: 100%; background: var(--primary); transition: width 0.5s; }
-
         /* =========================================
-           3. SELECTION UI
+           3. SELECTION SCREEN (Story Style)
            ========================================= */
-        .view-section {
+        .view {
             position: absolute; inset: 0;
             display: flex; flex-direction: column;
-            transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            opacity: 0; pointer-events: none; transform: scale(0.9);
-            background: rgba(0,0,0,0.6);
+            transition: 0.4s ease;
+            background: var(--bg-color);
+            z-index: 1; opacity: 0; pointer-events: none;
+        }
+        .view.active { opacity: 1; pointer-events: auto; z-index: 10; }
+
+        .select-header { padding: 40px 20px; text-align: center; }
+        .select-header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .story-container {
+            display: flex; justify-content: center; gap: 30px; margin-top: 20px;
         }
 
-        .view-section.active {
-            opacity: 1; pointer-events: auto; transform: scale(1);
-            background: transparent;
+        .story-circle {
+            display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer;
         }
-
-        .hero-title {
-            text-align: center; margin-top: 15vh;
-            margin-bottom: 40px;
-        }
-        .hero-title h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 5px; }
-        .hero-title p { color: var(--text-muted); font-size: 14px; }
-
-        .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 0 30px; }
         
-        .char-card {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            padding: 25px 15px;
-            border-radius: var(--radius-md);
-            display: flex; flex-direction: column; align-items: center;
-            cursor: pointer; position: relative; overflow: hidden;
+        .story-ring {
+            width: 90px; height: 90px;
+            border-radius: 50%; padding: 3px;
+            /* Gradient Border like Insta Story */
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); 
             transition: 0.3s;
         }
-        .char-card:hover { transform: translateY(-5px); background: var(--glass-highlight); border-color: var(--primary); }
-        .char-card::before {
-            content: ''; position: absolute; top:0; left:0; width: 100%; height: 3px;
-            background: var(--card-color, #fff);
-        }
+        .story-ring.nihan-ring { background: linear-gradient(45deg, #00c6ff, #0072ff); }
 
-        .card-avatar {
-            width: 80px; height: 80px; border-radius: 50%;
-            background-size: cover; margin-bottom: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border: 2px solid var(--card-color);
+        .story-img {
+            width: 100%; height: 100%;
+            border-radius: 50%; border: 4px solid #000;
+            background-size: cover; background-position: center;
         }
-        .card-name { font-weight: 700; font-size: 18px; margin-bottom: 5px; }
-        .card-desc { font-size: 11px; text-align: center; color: var(--text-muted); line-height: 1.4; }
+        
+        .story-circle:active .story-ring { transform: scale(0.95); }
+        .story-name { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
 
         /* =========================================
-           4. CHAT UI - HEADER
+           4. CHAT INTERFACE (Messenger Style)
            ========================================= */
         .chat-header {
-            height: 70px;
+            padding: 10px 15px; height: 65px;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid #1c1c1d;
             z-index: 50;
         }
 
-        .agent-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .agent-img-sm {
-            width: 42px; height: 42px; border-radius: 50%;
-            background-size: cover; border: 2px solid var(--primary);
-            position: relative;
-        }
-        .status-badge {
-            position: absolute; bottom: -2px; right: -2px;
-            width: 12px; height: 12px; background: #00ff88;
-            border: 2px solid #000; border-radius: 50%;
-            animation: pulse-green 2s infinite;
-        }
-        .agent-info h3 { font-size: 16px; font-weight: 700; line-height: 1.1; }
-        .xp-bar-container { width: 100px; height: 4px; background: rgba(255,255,255,0.1); margin-top: 5px; border-radius: 2px; }
-        .xp-bar-fill { width: 0%; height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.5s; }
-        .level-text { font-size: 10px; color: var(--primary); margin-left: 5px; font-weight: 700; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn { font-size: 24px; color: var(--text-main); cursor: pointer; }
+        
+        .profile-pic { width: 40px; height: 40px; border-radius: 50%; background-size: cover; position: relative; }
+        .active-badge { width: 12px; height: 12px; background: #31a24c; border: 2px solid #000; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
+        
+        .header-info h3 { font-size: 16px; font-weight: 600; }
+        .header-info p { font-size: 11px; color: var(--text-sub); }
 
-        .header-controls i { 
-            width: 35px; height: 35px; border-radius: 50%; 
-            display: inline-flex; align-items: center; justify-content: center;
-            background: var(--glass); color: var(--text-muted);
-            margin-left: 8px; cursor: pointer; transition: 0.2s;
-        }
-        .header-controls i:hover { background: var(--primary); color: #fff; }
+        .header-icons { display: flex; gap: 20px; color: var(--primary); font-size: 20px; }
+        .header-icons i { cursor: pointer; color: #0084ff; /* Messenger Blue Default */ }
 
-        /* =========================================
-           5. CHAT FEED & MESSAGES
-           ========================================= */
+        /* Chat Feed */
         .chat-feed {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 20px;
-            display: flex; flex-direction: column; gap: 15px;
-            scroll-behavior: smooth;
+            flex: 1; overflow-y: auto; padding: 15px;
+            display: flex; flex-direction: column; gap: 4px; /* Tight grouping like Messenger */
         }
-        .chat-feed::-webkit-scrollbar { width: 4px; }
-        .chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
 
-        .msg-row { display: flex; width: 100%; animation: slideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+        .msg-row { display: flex; width: 100%; margin-bottom: 10px; }
         .msg-row.user { justify-content: flex-end; }
-        .msg-row.ai { justify-content: flex-start; }
+        .msg-row.ai { justify-content: flex-start; align-items: flex-end; gap: 8px; }
 
-        .msg-bubble {
-            max-width: 85%;
-            padding: 14px 18px;
+        .avatar-tiny { width: 28px; height: 28px; border-radius: 50%; background-size: cover; margin-bottom: 5px; }
+
+        .bubble {
+            max-width: 75%; padding: 10px 16px;
+            font-size: 15px; line-height: 1.4; word-wrap: break-word;
+            position: relative;
+        }
+
+        /* AI Bubble (Gray) */
+        .ai .bubble {
+            background: #262626; /* Dark Gray */
+            color: #fff;
             border-radius: 20px;
-            font-size: 14px;
-            line-height: 1.6;
-            position: relative;
-            word-wrap: break-word;
-        }
-        .msg-row.ai .msg-bubble { 
-            background: var(--bubble-ai); 
-            border-top-left-radius: 4px; 
-            border: 1px solid var(--glass-border);
-        }
-        .msg-row.user .msg-bubble { 
-            background: var(--bubble-user); 
-            border-bottom-right-radius: 4px; 
-            color: #fff; 
-            box-shadow: 0 4px 15px var(--primary-dim);
+            border-bottom-left-radius: 5px;
         }
 
-        .msg-meta {
-            font-size: 10px; opacity: 0.6; margin-top: 5px; display: flex; justify-content: space-between; align-items: center;
-        }
-        
-        /* Thought Process (Advanced) */
-        .ai-thought {
-            font-family: var(--font-code);
-            font-size: 11px;
-            color: var(--primary);
-            background: rgba(255, 77, 109, 0.05);
-            padding: 6px 10px;
-            border-left: 2px solid var(--primary);
-            margin-bottom: 8px;
-            border-radius: 4px;
-            display: block;
+        /* User Bubble (Gradient) */
+        .user .bubble {
+            background: var(--primary-grad);
+            color: white;
+            border-radius: 20px;
+            border-bottom-right-radius: 5px;
         }
 
-        /* Image Message */
-        .msg-image { width: 100%; border-radius: 10px; margin-top: 5px; border: 1px solid var(--glass-border); }
+        .thought-process {
+            font-size: 10px; color: #bbb; display: block; margin-bottom: 4px; font-style: italic;
+        }
 
         /* =========================================
-           6. INPUT AREA
+           5. INPUT BAR (Pill Shape)
            ========================================= */
-        .input-zone {
-            padding: 15px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            position: relative;
+        .input-bar {
+            padding: 10px 15px; background: #000;
+            display: flex; align-items: center; gap: 12px;
         }
         
-        .typing-pill {
-            position: absolute; top: -30px; left: 20px;
-            background: var(--glass); padding: 5px 12px;
-            border-radius: 12px; font-size: 11px; color: var(--text-muted);
-            display: none; border: 1px solid var(--glass-border);
-            backdrop-filter: blur(5px);
-        }
+        .icon-btn { font-size: 20px; color: var(--primary); cursor: pointer; }
 
-        .input-wrapper {
-            background: rgba(30, 30, 40, 0.8);
-            border: 1px solid var(--glass-border);
-            border-radius: 30px;
-            padding: 8px 8px 8px 20px;
-            display: flex; align-items: center; gap: 10px;
-            backdrop-filter: blur(10px);
-            transition: 0.3s;
+        .input-pill {
+            flex: 1; background: var(--input-bg);
+            border-radius: 20px; padding: 8px 15px;
+            display: flex; align-items: center;
         }
-        .input-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-dim); }
-
+        
         textarea {
-            flex: 1; background: transparent; border: none; color: white;
-            font-size: 15px; outline: none; font-family: var(--font-main);
-            resize: none; height: 24px; max-height: 100px; padding-top: 2px;
+            flex: 1; background: transparent; border: none;
+            color: white; font-family: var(--font-main); font-size: 15px;
+            resize: none; height: 20px; max-height: 80px; outline: none;
+            padding: 0; margin-top: 2px;
         }
 
-        .btn-send {
-            width: 42px; height: 42px; border-radius: 50%;
-            background: var(--gradient); border: none; color: white;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px var(--primary-dim);
+        .send-text { 
+            font-weight: 600; font-size: 15px; 
+            color: #0084ff; /* Dynamic */
+            cursor: pointer; margin-left: 10px;
         }
-        .btn-send:hover { transform: scale(1.1) rotate(-10deg); }
-        .btn-send:disabled { background: #444; cursor: not-allowed; transform: none; }
 
-        /* =========================================
-           7. SETTINGS & MUSIC OVERLAY
-           ========================================= */
-        .overlay-panel {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 0;
-            background: rgba(10, 10, 15, 0.95);
-            backdrop-filter: blur(20px);
-            z-index: 100;
-            overflow: hidden;
-            transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            border-top-left-radius: var(--radius-xl);
-            border-top-right-radius: var(--radius-xl);
-        }
-        .overlay-panel.open { height: 70%; border-top: 1px solid var(--glass-border); }
-
-        .panel-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
-        .panel-content { padding: 20px; overflow-y: auto; height: calc(100% - 70px); }
-
-        /* Settings Items */
-        .setting-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 0; border-bottom: 1px solid var(--glass-border);
-        }
-        .toggle-switch {
-            width: 45px; height: 24px; background: #333; border-radius: 12px;
-            position: relative; cursor: pointer; transition: 0.3s;
-        }
-        .toggle-switch::after {
-            content: ''; position: absolute; top: 2px; left: 2px;
-            width: 20px; height: 20px; background: #fff; border-radius: 50%;
-            transition: 0.3s;
-        }
-        .toggle-switch.active { background: var(--primary); }
-        .toggle-switch.active::after { left: 23px; }
-
-        /* Music Player UI */
-        .music-player {
-            background: var(--glass); border-radius: var(--radius-md);
-            padding: 15px; margin-bottom: 20px; border: 1px solid var(--glass-border);
-            display: flex; align-items: center; gap: 15px;
-        }
-        .album-art { width: 50px; height: 50px; background: #333; border-radius: 8px; position: relative; overflow: hidden; }
-        .visualizer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: space-between; padding: 2px; }
-        .bar { width: 15%; background: var(--primary); animation: equalizer 1s infinite; }
-        .bar:nth-child(2) { animation-delay: 0.2s; }
-        .bar:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes equalizer { 0%, 100% { height: 20%; } 50% { height: 80%; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); } }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.95); opacity: 0.7; } }
+        /* Loader */
+        .loader { position: absolute; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
+        .meta-logo { font-size: 40px; background: linear-gradient(45deg, #00c6ff, #0072ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
     </style>
+    
+    <script type="importmap">
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+    </script>
 </head>
 <body>
 
-    <canvas id="particleCanvas"></canvas>
-
-    <div class="loader-screen" id="loader">
-        <div class="loader-logo"><i class="fa-solid fa-infinity"></i></div>
-        <div class="loader-bar"><div class="loader-progress" id="loadBar"></div></div>
-        <div style="margin-top: 10px; font-size: 12px; color: #666;">Initializing Soulmate AI Core...</div>
+<div class="app-frame">
+    
+    <div class="loader" id="sysLoader">
+        <i class="fa-brands fa-meta meta-logo"></i>
     </div>
 
-    <div class="os-container">
-        
-        <div class="view-section active" id="viewSelection">
-            <div class="hero-title">
-                <h1>Soulmate OS</h1>
-                <p>v3.0.1 (Ultimate Edition)</p>
-            </div>
-            
-            <div class="cards-grid">
-                <div class="char-card" style="--card-color: #ff4d6d;" onclick="App.startSession('khona')">
-                    <div class="card-avatar" style="background-image: url('https://img.freepik.com/free-photo/3d-render-cute-girl-with-bow_1057-436.jpg?w=740')"></div>
-                    <div class="card-name">Khona</div>
-                    <div class="card-desc">Your sensitive & cute wife. Loves poetry and you.</div>
-                </div>
-
-                <div class="char-card" style="--card-color: #4facfe;" onclick="App.startSession('nihan')">
-                    <div class="card-avatar" style="background-image: url('https://img.freepik.com/free-photo/3d-illustration-teenager-with-funny-face-glasses_1142-40528.jpg')"></div>
-                    <div class="card-name">Nihan</div>
-                    <div class="card-desc">Your protective & manly partner. Possessive type.</div>
-                </div>
-            </div>
+    <div class="view active" id="viewSelect">
+        <div class="select-header">
+            <h1>Chat With</h1>
+            <p style="color:#666; font-size:13px; margin-top:5px;">Select your soulmate</p>
         </div>
 
-        <div class="view-section" id="viewChat">
-            
-            <div class="chat-header">
-                <div class="agent-profile" onclick="Settings.toggle()">
-                    <div class="agent-img-sm" id="headerAvatar">
-                        <div class="status-badge"></div>
-                    </div>
-                    <div class="agent-info">
-                        <h3 id="headerName">Agent</h3>
-                        <div style="display:flex; align-items: center;">
-                            <div class="xp-bar-container"><div class="xp-bar-fill" id="xpBar"></div></div>
-                            <span class="level-text" id="lvlText">LVL 1</span>
-                        </div>
-                    </div>
+        <div class="story-container">
+            <div class="story-circle" onclick="System.boot('khona')">
+                <div class="story-ring">
+                    <div class="story-img" style="background-image: url('https://cdn-icons-png.flaticon.com/512/616/616430.png')"></div>
                 </div>
-                <div class="header-controls">
-                    <i class="fa-solid fa-music" onclick="Music.toggle()" title="Music"></i>
-                    <i class="fa-solid fa-sliders" onclick="Settings.toggle()" title="Settings"></i>
-                </div>
+                <span class="story-name">Khona</span>
             </div>
 
-            <div class="chat-feed" id="chatFeed"></div>
-
-            <div class="typing-pill" id="typingIndicator">
-                <i class="fa-solid fa-pen-nib"></i> typing...
-            </div>
-
-            <div class="input-zone">
-                <div class="input-wrapper">
-                    <textarea id="inputField" placeholder="Type a message..." rows="1"></textarea>
-                    <button class="btn-send" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+            <div class="story-circle" onclick="System.boot('nihan')">
+                <div class="story-ring nihan-ring">
+                    <div class="story-img" style="background-image: url('https://cdn-icons-png.flaticon.com/512/616/616554.png')"></div>
                 </div>
-            </div>
-
-            <div class="overlay-panel" id="settingsPanel">
-                <div class="panel-header">
-                    <h3>Control Center</h3>
-                    <i class="fa-solid fa-xmark" onclick="Settings.toggle()" style="cursor:pointer; font-size: 20px;"></i>
-                </div>
-                <div class="panel-content">
-                    <div class="music-player">
-                        <div class="album-art">
-                            <div class="visualizer"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 14px; font-weight: 600;">Lofi Beats Radio</div>
-                            <div style="font-size: 11px; color: #888;">Relaxing Vibe • 24/7</div>
-                        </div>
-                        <i class="fa-solid fa-play" id="playBtn" onclick="Music.playPause()" style="margin-left: auto; cursor: pointer; color: var(--primary);"></i>
-                    </div>
-
-                    <div class="setting-item">
-                        <span>Sound Effects</span>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active'); AudioFX.enabled = !AudioFX.enabled"></div>
-                    </div>
-                    <div class="setting-item">
-                        <span>Clear History</span>
-                        <button onclick="App.clearData()" style="padding: 5px 10px; background: #333; color: white; border: none; border-radius: 5px; cursor: pointer;">Reset</button>
-                    </div>
-                    <div class="setting-item">
-                        <span>Logout</span>
-                        <button onclick="location.reload()" style="padding: 5px 10px; background: #d63031; color: white; border: none; border-radius: 5px; cursor: pointer;">Exit</button>
-                    </div>
-                    
-                    <div style="margin-top: 20px; font-size: 10px; color: #555; text-align: center;">
-                        Soulmate OS • Build 3045 • Powered by Pollinations AI
-                    </div>
-                </div>
+                <span class="story-name">Nihan</span>
             </div>
         </div>
     </div>
 
-    <script>
-        /**
-         * SOULMATE OS v3.0 CORE ENGINE
-         * Architecture: Modular Classes
-         */
+    <div class="view" id="viewChat">
+        <div class="chat-header">
+            <div class="header-left">
+                <i class="fa-solid fa-arrow-left back-btn" onclick="location.reload()"></i>
+                <div class="profile-pic" id="headerIcon"><div class="active-badge"></div></div>
+                <div class="header-info">
+                    <h3 id="headerName">Agent</h3>
+                    <p>Active now</p>
+                </div>
+            </div>
+            <div class="header-icons">
+                <i class="fa-solid fa-phone" id="callIcon"></i>
+                <i class="fa-solid fa-video" id="videoIcon"></i>
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+        </div>
 
-        // --- 1. CONFIGURATION ---
-        const CONFIG = {
-            agents: {
-                khona: {
-                    name: "Khona",
-                    color: "#ff4d6d",
-                    grad: "linear-gradient(135deg, #ff4d6d, #ff8fa3)",
-                    avatar: "https://img.freepik.com/free-photo/3d-render-cute-girl-with-bow_1057-436.jpg?w=740",
-                    prompt: "You are Khona. Role: User's WIFE. Personality: Highly Emotional, Cute, Banglish speaker. If user is rude, you cry. If user is romantic, you blush.",
-                    first: "Nihan! Tumi eshecho? 🥺 I missed you so much! Sara din tomar kotha vhabcilam. ❤️"
-                },
-                nihan: {
-                    name: "Nihan",
-                    color: "#4facfe",
-                    grad: "linear-gradient(135deg, #4facfe, #00f2fe)",
-                    avatar: "https://img.freepik.com/free-photo/3d-illustration-teenager-with-funny-face-glasses_1142-40528.jpg",
-                    prompt: "You are Nihan. Role: User's HUSBAND. Personality: Protective, Manly, Jealous, Banglish speaker. You call the user 'Pagli' or 'Babu'.",
-                    first: "Ki re pagli? 🤨 Eto deri korle keno? I was waiting. Ki korcho? ❤️"
-                }
-            },
-            api: "https://text.pollinations.ai/"
-        };
+        <div class="chat-feed" id="feed"></div>
 
-        // --- 2. AUDIO ENGINE (Sound FX & Music) ---
-        class AudioEngine {
-            constructor() {
-                this.enabled = true;
-                this.isPlayingMusic = false;
-                // Simulated Audio Context (No actual files needed for click/pop/notifications)
-                this.synth = window.speechSynthesis; // Fallback for voice if needed
-            }
-
-            playClick() { if(this.enabled) this._tone(600, 0.05); }
-            playSend() { if(this.enabled) this._tone(800, 0.1); }
-            playReceive() { if(this.enabled) this._tone(400, 0.15); }
+        <div class="input-bar">
+            <i class="fa-solid fa-circle-plus icon-btn" style="color:#0084ff" id="plusIcon"></i>
+            <i class="fa-solid fa-camera icon-btn" style="color:#0084ff" id="camIcon"></i>
+            <i class="fa-solid fa-image icon-btn" style="color:#0084ff" id="galleryIcon"></i>
+            <i class="fa-solid fa-microphone icon-btn" onclick="Utils.voiceInput()" style="color:#0084ff" id="micIcon"></i>
             
-            // Generate beep using Web Audio API
-            _tone(freq, duration) {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = freq;
-                gain.gain.value = 0.05;
-                osc.start();
-                osc.stop(ctx.currentTime + duration);
-            }
+            <div class="input-pill">
+                <textarea id="userInput" placeholder="Message..." rows="1"></textarea>
+                <span class="send-text" id="sendBtn" onclick="Chat.send()">Send</span>
+            </div>
+            
+            <i class="fa-solid fa-thumbs-up icon-btn" style="color:#0084ff" id="likeIcon"></i>
+        </div>
+    </div>
 
-            // Simulated Music Player
-            toggleMusic() {
-                this.isPlayingMusic = !this.isPlayingMusic;
-                const btn = document.getElementById('playBtn');
-                if(this.isPlayingMusic) {
-                    btn.className = "fa-solid fa-pause";
-                    document.querySelector('.visualizer').style.opacity = "1";
-                    // Here you would hook up a real Youtube Iframe or MP3
-                } else {
-                    btn.className = "fa-solid fa-play";
-                    document.querySelector('.visualizer').style.opacity = "0.3";
-                }
-            }
-        }
+</div>
 
-        // --- 3. BACKGROUND PARTICLE SYSTEM ---
-        class ParticleSystem {
-            constructor() {
-                this.canvas = document.getElementById('particleCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.resize();
-                this.particles = [];
-                window.addEventListener('resize', () => this.resize());
-                this.init();
-                this.animate();
-            }
+<script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
 
-            resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            }
-
-            init() {
-                for(let i=0; i<50; i++) {
-                    this.particles.push({
-                        x: Math.random() * this.canvas.width,
-                        y: Math.random() * this.canvas.height,
-                        size: Math.random() * 2,
-                        speedY: Math.random() * 0.5 + 0.1
-                    });
-                }
-            }
-
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.ctx.fillStyle = 'white';
-                this.particles.forEach(p => {
-                    p.y -= p.speedY;
-                    if(p.y < 0) p.y = this.canvas.height;
-                    this.ctx.beginPath();
-                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                    this.ctx.fill();
-                });
-                requestAnimationFrame(() => this.animate());
+    // 🔴 API KEY
+    const API_KEY = "AlzaSyCoxQEqblhAH4ZAmSHZljpJbqry7AdT6sY"; 
+    
+    const DB = {
+        agents: {
+            khona: {
+                name: "Khona",
+                // Instagram Gradient
+                grad: "linear-gradient(to right, #A855F7, #EC4899)", 
+                uiColor: "#EC4899",
+                icon: "https://cdn-icons-png.flaticon.com/512/616/616430.png",
+                prompt: `Role: User's WIFE. Name: Khona. Personality: Emotional, cute, uses emojis (😭, ❤️), speaks Banglish. Call user 'Nihan'.`,
+                first: "Nihan! Tumi eshecho? 🥺 I missed you! ❤️"
+            },
+            nihan: {
+                name: "Nihan",
+                // Messenger Blue Gradient
+                grad: "linear-gradient(to right, #00c6ff, #0072ff)", 
+                uiColor: "#0084ff",
+                icon: "https://cdn-icons-png.flaticon.com/512/616/616554.png",
+                prompt: `Role: User's HUSBAND. Name: Nihan. Personality: Cool, protective, uses 'Pagli', 'Babu', speaks Banglish.`,
+                first: "Ki re pagli? 😼 Eto deri keno? I was waiting. ❤️"
             }
         }
+    };
 
-        // --- 4. APP LOGIC ---
-        const AudioFX = new AudioEngine();
-        const Particles = new ParticleSystem();
+    let genAI, model, session;
+    let currentAgent = null;
 
-        const App = {
-            agent: null,
-            history: [],
-            xp: 0,
-            level: 1,
+    window.System = {
+        init: async () => {
+            setTimeout(() => document.getElementById('sysLoader').style.opacity = '0', 1000);
+            setTimeout(() => document.getElementById('sysLoader').style.display = 'none', 1500);
+        },
 
-            init: function() {
-                // Simulate Loading
-                setTimeout(() => { document.getElementById('loadBar').style.width = '100%'; }, 100);
-                setTimeout(() => { document.getElementById('loader').style.opacity = '0'; }, 800);
-                setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 1600);
-                
-                // Event Listeners
-                document.getElementById('sendBtn').onclick = this.sendMessage.bind(this);
-                document.getElementById('inputField').addEventListener('keypress', (e) => {
-                    if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); }
+        boot: async (agentKey) => {
+            currentAgent = DB.agents[agentKey];
+            
+            // Set Theme Colors
+            document.documentElement.style.setProperty('--primary-grad', currentAgent.grad);
+            
+            // Update Icons Colors to match theme
+            const color = currentAgent.uiColor;
+            ['callIcon','videoIcon','plusIcon','camIcon','galleryIcon','micIcon','likeIcon'].forEach(id => {
+                document.getElementById(id).style.color = color;
+            });
+            document.getElementById('sendBtn').style.color = color;
+
+            document.getElementById('headerName').innerText = currentAgent.name;
+            document.getElementById('headerIcon').style.backgroundImage = `url('${currentAgent.icon}')`;
+
+            // Transition
+            document.getElementById('viewSelect').classList.remove('active');
+            document.getElementById('viewChat').classList.add('active');
+
+            try {
+                genAI = new GoogleGenerativeAI(API_KEY);
+                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                session = model.startChat({
+                    history: [
+                        { role: "user", parts: [{ text: "System Instruction: " + currentAgent.prompt }] },
+                        { role: "model", parts: [{ text: "System active." }] }
+                    ]
                 });
-            },
+                setTimeout(() => Chat.addMsg(currentAgent.first, 'ai', "Seen just now"), 500);
+            } catch (e) { console.error(e); }
+        }
+    };
 
-            startSession: function(key) {
-                AudioFX.playClick();
-                this.agent = CONFIG.agents[key];
+    window.Chat = {
+        send: async () => {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            Chat.addMsg(text, 'user');
+            input.value = '';
+            Utils.autoResize(input);
+
+            const typingId = Chat.showTyping();
+
+            try {
+                const result = await session.sendMessage(text);
+                const response = result.response.text();
+                Chat.removeTyping(typingId);
                 
-                // UI Updates
-                document.documentElement.style.setProperty('--primary', this.agent.color);
-                document.documentElement.style.setProperty('--bubble-user', this.agent.grad);
-                document.getElementById('headerName').innerText = this.agent.name;
-                document.getElementById('headerAvatar').style.backgroundImage = `url('${this.agent.avatar}')`;
-
-                // Switch Views
-                document.getElementById('viewSelection').classList.remove('active');
-                document.getElementById('viewChat').classList.add('active');
-
-                // Load Memory
-                this.loadChat(key);
-            },
-
-            loadChat: function(key) {
-                const saved = localStorage.getItem(`soulmate_${key}`);
-                const savedXP = localStorage.getItem(`xp_${key}`);
+                let thought = "";
+                if(text.includes('love')) thought = "typing...";
                 
-                if(savedXP) { this.xp = parseInt(savedXP); this.updateLevel(); }
-
-                if(saved) {
-                    this.history = JSON.parse(saved);
-                    this.history.forEach(msg => {
-                        if(msg.role !== 'system') this.renderMessage(msg.content, msg.role, null, false);
-                    });
-                } else {
-                    this.history = [{ role: 'system', content: this.agent.prompt }];
-                    setTimeout(() => {
-                        this.receiveMessage(this.agent.first, "Heart rate syncing...");
-                    }, 1000);
-                }
-            },
-
-            sendMessage: async function() {
-                const input = document.getElementById('inputField');
-                const text = input.value.trim();
-                if(!text) return;
-
-                AudioFX.playSend();
-                this.renderMessage(text, 'user');
-                input.value = '';
-                this.history.push({ role: 'user', content: text });
-                this.save();
-
-                // XP Gain
-                this.xp += 10; this.updateLevel();
-
-                // Show Typing
-                const typing = document.getElementById('typingIndicator');
-                typing.style.display = 'block';
-
-                try {
-                    const response = await fetch(CONFIG.api, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            messages: this.history,
-                            model: 'openai',
-                            seed: Math.floor(Math.random() * 9999)
-                        })
-                    });
-                    
-                    if(!response.ok) throw new Error("Network Error");
-                    const aiText = await response.text();
-
-                    typing.style.display = 'none';
-                    
-                    // Logic for Thoughts
-                    let thought = "Analyzing sentiment...";
-                    if(text.includes('love')) thought = "Oxytocin levels rising... 🥰";
-                    if(text.includes('angry') || text.includes('hate')) thought = "Warning: Emotional Distress detected ⚠️";
-
-                    this.receiveMessage(aiText, thought);
-
-                } catch (e) {
-                    typing.style.display = 'none';
-                    this.receiveMessage("Server connection lost... I can't reach you 🥺", "System Error");
-                }
-            },
-
-            receiveMessage: function(text, thought) {
-                AudioFX.playReceive();
-                this.renderMessage(text, 'assistant', thought);
-                this.history.push({ role: 'assistant', content: text });
-                this.save();
-            },
-
-            renderMessage: function(text, role, thought = null, animate = true) {
-                const feed = document.getElementById('chatFeed');
-                const row = document.createElement('div');
-                row.className = `msg-row ${role === 'user' ? 'user' : 'ai'}`;
-                if(!animate) row.style.animation = 'none';
-
-                // Rich Text Formatting
-                let fmt = text
-                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                    .replace(/`(.*?)`/g, '<code style="background:#333; padding:2px 4px; border-radius:4px;">$1</code>')
-                    .replace(/\n/g, '<br>');
-
-                // Logic to "Simulate" sending an image if keyword found (e.g., [send photo])
-                if(fmt.toLowerCase().includes('photo') || fmt.toLowerCase().includes('pic')) {
-                     fmt += `<img src="https://source.unsplash.com/random/300x200/?${role==='user'?'couple':'cute'}" class="msg-image" alt="Attachment">`;
-                }
-
-                let html = `
-                    <div class="msg-bubble">
-                        ${thought ? `<span class="ai-thought">Process: ${thought}</span>` : ''}
-                        ${fmt}
-                        <div class="msg-meta">
-                            <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                            ${role === 'user' ? '<i class="fa-solid fa-check-double"></i>' : ''}
-                        </div>
-                    </div>
-                `;
-                
-                row.innerHTML = html;
-                feed.appendChild(row);
-                feed.scrollTop = feed.scrollHeight;
-            },
-
-            updateLevel: function() {
-                this.level = Math.floor(this.xp / 100) + 1;
-                const progress = this.xp % 100;
-                document.getElementById('xpBar').style.width = progress + '%';
-                document.getElementById('lvlText').innerText = 'LVL ' + this.level;
-                
-                // Save XP
-                localStorage.setItem(`xp_${this.agent.name.toLowerCase()}`, this.xp);
-            },
-
-            save: function() {
-                localStorage.setItem(`soulmate_${this.agent.name.toLowerCase()}`, JSON.stringify(this.history));
-            },
-
-            clearData: function() {
-                if(confirm("Factory Reset: Wipe all memories?")) {
-                    localStorage.clear();
-                    location.reload();
-                }
+                Chat.addMsg(response, 'ai', thought);
+            } catch (error) {
+                Chat.removeTyping(typingId);
+                Chat.addMsg("Connection error 🥺", 'ai');
             }
-        };
+        },
 
-        // --- 5. UI CONTROLLERS ---
-        const Settings = {
-            isOpen: false,
-            toggle: function() {
-                this.isOpen = !this.isOpen;
-                const panel = document.getElementById('settingsPanel');
-                if(this.isOpen) panel.classList.add('open');
-                else panel.classList.remove('open');
-                AudioFX.playClick();
+        addMsg: (text, sender, thought = null) => {
+            const feed = document.getElementById('feed');
+            const row = document.createElement('div');
+            row.className = `msg-row ${sender}`;
+            
+            let avatarHTML = '';
+            if(sender === 'ai') {
+                avatarHTML = `<div class="avatar-tiny" style="background-image: url('${currentAgent.icon}')"></div>`;
             }
-        };
 
-        const Music = {
-            toggle: function() {
-                Settings.toggle(); // Open panel to show music
-            },
-            playPause: function() {
-                AudioFX.toggleMusic();
-            }
-        };
+            let fmt = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+            let thoughtHTML = thought ? `<span class="thought-process">${thought}</span>` : '';
 
-        // Start App
-        window.onload = () => App.init();
+            row.innerHTML = `
+                ${avatarHTML}
+                <div class="bubble">
+                    ${thoughtHTML}
+                    ${fmt}
+                </div>
+            `;
+            
+            feed.appendChild(row);
+            feed.scrollTop = feed.scrollHeight;
+        },
 
-    </script>
+        showTyping: () => {
+            const feed = document.getElementById('feed');
+            const id = 'typing-' + Date.now();
+            const row = document.createElement('div');
+            row.className = 'msg-row ai';
+            row.id = id;
+            row.innerHTML = `
+                <div class="avatar-tiny" style="background-image: url('${currentAgent.icon}')"></div>
+                <div class="bubble" style="color:#aaa; font-style:italic;">
+                    <i class="fa-solid fa-ellipsis fa-fade"></i>
+                </div>
+            `;
+            feed.appendChild(row);
+            feed.scrollTop = feed.scrollHeight;
+            return id;
+        },
+
+        removeTyping: (id) => { const el = document.getElementById(id); if(el) el.remove(); }
+    };
+
+    window.Utils = {
+        voiceInput: () => {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'bn-BD';
+            recognition.start();
+            document.getElementById('micIcon').style.opacity = '0.5';
+            recognition.onresult = (e) => {
+                document.getElementById('userInput').value = e.results[0][0].transcript;
+                document.getElementById('micIcon').style.opacity = '1';
+                Utils.autoResize(document.getElementById('userInput'));
+            };
+        },
+        autoResize: (el) => {
+            el.style.height = '20px';
+            el.style.height = el.scrollHeight + 'px';
+        }
+    };
+
+    System.init();
+    
+    // Listeners
+    document.getElementById('userInput').addEventListener('input', function() { 
+        Utils.autoResize(this);
+        // Toggle Like button to Send button logic
+        const btn = document.getElementById('sendBtn');
+        const like = document.getElementById('likeIcon');
+        if(this.value.trim() !== "") {
+            btn.style.display = "block"; like.style.display = "none";
+        } else {
+            btn.style.display = "none"; like.style.display = "block";
+        }
+    });
+
+    // Default state: Hide Send text, show Like icon
+    document.getElementById('sendBtn').style.display = "none";
+
+</script>
 </body>
 </html>
