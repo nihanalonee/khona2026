@@ -4,362 +4,435 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Soulmate Chat</title>
+    <title>Soulmate OS</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <style>
-        /* --- CSS VARIABLES --- */
+        /* =========================================
+           CORE STYLES
+           ========================================= */
         :root {
-            --bg-color: #000000;
-            --input-bg: #1c1c1e;
-            --text-white: #ffffff;
-            --primary-blue: #0084ff;
-            --primary-pink: #ff3366; 
-            --bubble-gray: #262626; 
+            --bg-color: #050505;
+            --app-header-height: 60px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-white);
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
+            background: #000;
+            color: #fff;
+            height: 100dvh; /* Mobile Fit Fix */
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover; background-position: center;
         }
 
-        /* --- 1. SELECTION SCREEN --- */
-        .view-section {
-            position: absolute; inset: 0;
-            background: #000; z-index: 10;
+        .os-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); }
+
+        /* PHONE FRAME */
+        .phone-frame {
+            width: 100%; height: 100%; position: relative;
+            background: #000; overflow: hidden;
             display: flex; flex-direction: column;
-            transition: 0.3s ease;
         }
-        .view-section.hidden { opacity: 0; pointer-events: none; z-index: 0; }
 
-        .story-wrapper {
-            flex: 1; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; gap: 40px;
+        @media (min-width: 600px) {
+            .phone-frame {
+                width: 400px; height: 92vh; margin-top: 4vh;
+                border-radius: 40px; border: 6px solid #222;
+                box-shadow: 0 0 60px rgba(0,0,0,0.8);
+            }
         }
-        .story-title { 
-            font-size: 26px; font-weight: 700; margin-bottom: 10px; 
-            background: linear-gradient(45deg, #ff3366, #0084ff);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        
-        .story-row { display: flex; gap: 40px; }
-        .story-item { display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; }
-        
-        /* Insta Story Ring */
-        .story-ring {
-            width: 100px; height: 100px; border-radius: 50%; padding: 4px;
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-            transition: 0.2s; position: relative;
-        }
-        .ring-blue { background: linear-gradient(45deg, #00c6ff, #0072ff); }
-        
-        .story-item:active .story-ring { transform: scale(0.9); }
-        
-        .story-img {
-            width: 100%; height: 100%; border-radius: 50%;
-            border: 4px solid #000; background-size: cover; background-position: center;
-            background-color: #222; /* Fallback color */
-        }
-        .story-name { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* --- 2. CHAT SCREEN --- */
-        .chat-header {
-            height: 65px; padding: 0 15px;
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
-            border-bottom: 1px solid #1c1c1e;
-            z-index: 50;
+        /* SCREENS */
+        .screen {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            background: #000;
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: translateX(100%);
+            z-index: 10;
         }
-        
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .back-icon { font-size: 24px; cursor: pointer; padding: 5px; }
-        
-        .profile-bubble { width: 40px; height: 40px; border-radius: 50%; background-size: cover; position: relative; border: 1px solid #333; }
-        .active-dot { width: 12px; height: 12px; background: #31a24c; border: 2px solid #000; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
-        
-        .header-actions { display: flex; gap: 25px; font-size: 22px; }
-        .theme-icon { color: var(--primary-blue); cursor: pointer; }
+        .screen.active { transform: translateX(0); z-index: 20; }
+        .screen.home { transform: translateX(0); z-index: 1; background: transparent; }
 
-        /* CHAT FEED */
-        .chat-feed {
-            flex: 1; overflow-y: auto; 
-            padding: 15px; padding-bottom: 100px; /* More space for input */
-            display: flex; flex-direction: column; gap: 8px;
+        /* HOME SCREEN */
+        .home-header { padding: 50px 20px 10px; text-align: center; }
+        .home-grid {
+            padding: 20px;
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 20px; align-content: start;
         }
-        
-        .msg-row { display: flex; width: 100%; margin-bottom: 5px; }
-        .msg-row.user { justify-content: flex-end; }
-        .msg-row.ai { justify-content: flex-start; align-items: flex-end; gap: 10px; }
-        
-        .tiny-avatar { width: 32px; height: 32px; border-radius: 50%; background-size: cover; margin-bottom: 5px; }
-        
-        .bubble {
-            max-width: 75%; padding: 12px 16px;
-            font-size: 16px; line-height: 1.4; word-wrap: break-word;
-            position: relative;
-        }
-        .ai .bubble { background: var(--bubble-gray); border-radius: 20px; border-bottom-left-radius: 5px; }
-        .user .bubble { background: var(--primary-blue); color: white; border-radius: 20px; border-bottom-right-radius: 5px; }
 
-        /* --- 3. INPUT BAR (FIXED BOTTOM) --- */
-        .input-container {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: #000; 
-            padding: 12px 15px;
-            /* CRITICAL FIX FOR MOBILE NAV BAR */
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .app-icon:active { transform: scale(0.9); }
+
+        .icon-box {
+            width: 60px; height: 60px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .icon-label { font-size: 11px; font-weight: 500; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+        /* ICON GRADIENTS */
+        .ico-chat { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+        .ico-music { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
+        .ico-date { background: linear-gradient(135deg, #FF512F, #DD2476); }
+        .ico-love { background: linear-gradient(135deg, #ff758c, #ff7eb3); }
+        .ico-game { background: linear-gradient(135deg, #a8ff78, #78ffd6); color: #000; }
+        .ico-diary { background: linear-gradient(135deg, #fce38a, #f38181); }
+        .ico-age { background: linear-gradient(135deg, #43cea2, #185a9d); }
+        .ico-mood { background: linear-gradient(135deg, #654ea3, #eaafc8); }
+        .ico-magic { background: linear-gradient(135deg, #2b5876, #4e4376); }
+
+        /* COMMON APP HEADER */
+        .app-header {
+            height: var(--app-header-height); padding: 0 15px;
             display: flex; align-items: center; gap: 15px;
-            border-top: 1px solid #1c1c1e;
-            z-index: 100;
+            background: rgba(20,20,20,0.95); border-bottom: 1px solid #333;
         }
+        .back-btn { font-size: 22px; cursor: pointer; padding: 5px; }
+        .app-title { font-size: 18px; font-weight: 700; }
 
-        .icon-btn { font-size: 24px; cursor: pointer; }
-        
-        .input-pill {
-            flex: 1; background: var(--input-bg);
-            border-radius: 25px; padding: 10px 18px;
-            display: flex; align-items: center;
-        }
-        
-        textarea {
-            width: 100%; background: transparent; border: none;
-            color: white; font-family: 'Inter', sans-serif; font-size: 16px;
-            resize: none; height: 24px; max-height: 120px; outline: none;
-            padding: 0;
-        }
-        
-        .send-txt { font-weight: 600; font-size: 16px; margin-left: 10px; cursor: pointer; display: none; }
-        .typing { display: none; margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #777; font-style: italic; }
+        /* --- APP STYLES --- */
+        .app-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; text-align: center; }
+
+        /* 1. CHAT */
+        .chat-feed { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .msg-row { display: flex; width: 100%; }
+        .msg-row.user { justify-content: flex-end; }
+        .bubble { padding: 12px 16px; border-radius: 20px; max-width: 75%; font-size: 15px; word-wrap: break-word; }
+        .ai-bubble { background: #222; color: #eee; border-bottom-left-radius: 4px; }
+        .user-bubble { background: #0084ff; color: #fff; border-bottom-right-radius: 4px; }
+        .chat-bar { position: absolute; bottom: 0; width: 100%; padding: 15px; background: #000; display: flex; gap: 10px; padding-bottom: max(15px, env(safe-area-inset-bottom)); border-top: 1px solid #222; }
+        .chat-input { flex: 1; background: #222; border: none; padding: 12px 20px; border-radius: 30px; color: white; outline: none; }
+
+        /* 2. AGE CALC */
+        .age-input { padding: 15px; width: 100%; background: #222; border: 1px solid #444; border-radius: 12px; color: #fff; margin-bottom: 20px; }
+        .age-result { font-size: 24px; font-weight: 700; color: #43cea2; margin-top: 20px; display: none; }
+        .age-box { background: #111; padding: 20px; border-radius: 20px; width: 100%; border: 1px solid #333; }
+
+        /* 3. MOOD SCANNER */
+        .fingerprint { font-size: 80px; color: #444; margin: 30px 0; cursor: pointer; transition: 0.2s; position: relative; }
+        .fingerprint.scanning { color: #ff4081; animation: pulse 0.5s infinite; }
+        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #00ff88; animation: scan 1s infinite; display: none; }
+        .mood-result { font-size: 28px; font-weight: 800; margin-top: 20px; height: 40px; }
+        @keyframes scan { 0% {top:0} 100% {top:100%} }
+        @keyframes pulse { 0% {transform:scale(1)} 50% {transform:scale(1.1)} 100% {transform:scale(1)} }
+
+        /* 4. MAGIC ORB */
+        .magic-orb { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #4e4376, #000); box-shadow: 0 0 50px rgba(78, 67, 118, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 30px 0; transition: 0.3s; position: relative; overflow: hidden; }
+        .magic-orb:active { transform: scale(0.95); }
+        .magic-text { font-size: 24px; font-weight: 700; color: #fff; text-shadow: 0 0 10px #fff; z-index: 2; text-align: center; padding: 20px; }
+        .orb-shine { position: absolute; top: 20%; left: 20%; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; filter: blur(10px); }
+
+        /* OTHERS */
+        .music-art { width: 150px; height: 150px; border-radius: 20px; background-image: url('https://media.tenor.com/tHj10C6gX-IAAAAC/lofi-girl-lofi.gif'); background-size: cover; margin-bottom: 20px; }
+        .game-btn { padding: 12px 30px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; width: 100%; margin: 5px 0; }
+        .date-display { font-size: 50px; font-weight: 800; background: -webkit-linear-gradient(#eee, #333); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
     </style>
-
+    
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
 </head>
 <body>
 
-    <div class="view-section" id="screenSelect">
-        <div class="story-wrapper">
-            <h1 class="story-title">Soulmate OS</h1>
-            <p style="color:#666; font-size:14px; margin-top:-30px;">Tonton Friends Edition</p>
-            
-            <div class="story-row">
-                <div class="story-item" onclick="startChat('khona')">
-                    <div class="story-ring">
-                        <div class="story-img" style="background-image: url('https://i.pinimg.com/736x/82/38/53/8238531eb4313264eb789b71e1fc2224.jpg');"></div>
-                    </div>
-                    <span class="story-name">Khona</span>
+    <div class="os-overlay"></div>
+
+    <div class="phone-frame">
+        
+        <div class="screen home" id="homeScreen">
+            <div class="home-header">
+                <h1 style="font-size: 32px; font-weight: 800;">Soulmate OS</h1>
+                <p style="opacity: 0.7; font-size: 13px;">v5.0 Ultra Edition</p>
+            </div>
+
+            <div class="home-grid">
+                <div class="app-icon" onclick="openApp('appChat')">
+                    <div class="icon-box ico-chat"><i class="fa-solid fa-comments"></i></div>
+                    <span class="icon-label">Chat</span>
                 </div>
-                <div class="story-item" onclick="startChat('nihan')">
-                    <div class="story-ring ring-blue">
-                        <div class="story-img" style="background-image: url('https://i.pinimg.com/736x/2c/80/d2/2c80d226a35022e37996c1647469a478.jpg');"></div>
-                    </div>
-                    <span class="story-name">Nihan</span>
+                <div class="app-icon" onclick="openApp('appMusic')">
+                    <div class="icon-box ico-music"><i class="fa-solid fa-music"></i></div>
+                    <span class="icon-label">Music</span>
+                </div>
+                <div class="app-icon" onclick="openApp('appAge')">
+                    <div class="icon-box ico-age"><i class="fa-solid fa-cake-candles"></i></div>
+                    <span class="icon-label">Age Calc</span>
+                </div>
+                <div class="app-icon" onclick="openApp('appDate')">
+                    <div class="icon-box ico-date"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <span class="icon-label">Together</span>
+                </div>
+                <div class="app-icon" onclick="openApp('appMood')">
+                    <div class="icon-box ico-mood"><i class="fa-solid fa-fingerprint"></i></div>
+                    <span class="icon-label">Mood Scan</span>
+                </div>
+                <div class="app-icon" onclick="openApp('appMagic')">
+                    <div class="icon-box ico-magic"><i class="fa-solid fa-crystal-ball"></i></div>
+                    <span class="icon-label">Decision</span>
+                </div>
+                <div class="app-icon" onclick="openApp('appLove')">
+                    <div class="icon-box ico-love"><i class="fa-solid fa-calculator"></i></div>
+                    <span class="icon-label">Love %</span>
+                </div>
+                <div class="app-icon" onclick="openApp('appGame')">
+                    <div class="icon-box ico-game"><i class="fa-solid fa-dice"></i></div>
+                    <span class="icon-label">Games</span>
+                </div>
+                <div class="app-icon" onclick="openApp('appDiary')">
+                    <div class="icon-box ico-diary"><i class="fa-solid fa-book"></i></div>
+                    <span class="icon-label">Diary</span>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="view-section hidden" id="screenChat">
-        <div class="chat-header">
-            <div class="header-left">
-                <i class="fa-solid fa-arrow-left back-icon" onclick="location.reload()"></i>
-                <div class="profile-bubble" id="headerIcon"><div class="active-dot"></div></div>
-                <div>
-                    <h3 id="headerName" style="font-size:17px; font-weight:600;">Agent</h3>
-                    <p style="font-size:12px; color:#888;">Active now</p>
+        <div class="screen" id="appChat">
+            <div class="app-header">
+                <i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i>
+                <div style="width:35px; height:35px; border-radius:50%; background:url('https://i.pinimg.com/736x/82/38/53/8238531eb4313264eb789b71e1fc2224.jpg'); background-size:cover;"></div>
+                <span class="app-title">Khona</span>
+            </div>
+            <div class="chat-feed" id="chatFeed">
+                <div class="msg-row"><div class="bubble ai-bubble">Hi Nihan! Kemon acho? 😽</div></div>
+            </div>
+            <div class="chat-bar">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Message...">
+                <button onclick="sendChat()" style="width:45px; height:45px; border-radius:50%; border:none; background:#0084ff; color:white;"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <div class="screen" id="appMusic">
+            <div class="app-header"><i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i><span class="app-title">Lofi Player</span></div>
+            <div class="app-content">
+                <div class="music-art"></div>
+                <h3>Midnight Vibes</h3>
+                <p style="color:#888; margin-bottom:30px;">Relaxing Beats</p>
+                <div style="font-size:40px; cursor:pointer;" onclick="toggleMusic(this)">
+                    <i class="fa-solid fa-circle-play" style="color:#8E2DE2"></i>
+                </div>
+                <audio id="audioPlayer" src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3" loop></audio>
+            </div>
+        </div>
+
+        <div class="screen" id="appAge">
+            <div class="app-header"><i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i><span class="app-title">Age Calculator</span></div>
+            <div class="app-content">
+                <div class="age-box">
+                    <h3 style="margin-bottom:20px;">Enter Date of Birth</h3>
+                    <input type="date" class="age-input" id="dobInput">
+                    <button onclick="calculateAge()" class="game-btn" style="background:#43cea2; color:#000;">CALCULATE</button>
+                    <div class="age-result" id="ageResult"></div>
                 </div>
             </div>
-            <div class="header-actions">
-                <i class="fa-solid fa-phone theme-icon"></i>
-                <i class="fa-solid fa-video theme-icon"></i>
-                <i class="fa-solid fa-circle-info theme-icon"></i>
+        </div>
+
+        <div class="screen" id="appDate">
+            <div class="app-header"><i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i><span class="app-title">Relationship</span></div>
+            <div class="app-content">
+                <i class="fa-solid fa-heart-pulse animate__animated animate__heartBeat animate__infinite" style="font-size:60px; color:#ff3366;"></i>
+                <div class="date-display" id="daysCount" style="margin:20px 0;">0</div>
+                <p>Days of Love</p>
+                <input type="date" class="age-input" style="margin-top:30px;" id="startDate" onchange="calcDays()">
             </div>
         </div>
 
-        <div class="chat-feed" id="feed"></div>
-        <div class="typing" id="typingIndicator">typing...</div>
-
-        <div class="input-container">
-            <i class="fa-solid fa-circle-plus icon-btn theme-icon"></i>
-            <i class="fa-solid fa-camera icon-btn theme-icon"></i>
-            <i class="fa-solid fa-image icon-btn theme-icon"></i>
-            <i class="fa-solid fa-microphone icon-btn theme-icon"></i>
-            
-            <div class="input-pill">
-                <textarea id="userInput" placeholder="Message..." rows="1"></textarea>
-                <span class="send-txt theme-icon" id="sendBtn">Send</span>
+        <div class="screen" id="appMood">
+            <div class="app-header"><i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i><span class="app-title">Mood Scan</span></div>
+            <div class="app-content">
+                <p>Place finger to scan</p>
+                <div class="fingerprint" id="fingerprint" onmousedown="startScan()" ontouchstart="startScan()" onmouseup="stopScan()" ontouchend="stopScan()">
+                    <i class="fa-solid fa-fingerprint"></i>
+                    <div class="scan-line" id="scanLine"></div>
+                </div>
+                <div class="mood-result" id="moodResult"></div>
             </div>
-            
-            <i class="fa-solid fa-thumbs-up icon-btn theme-icon" id="likeBtn"></i>
         </div>
+
+        <div class="screen" id="appMagic">
+            <div class="app-header"><i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i><span class="app-title">Decision Orb</span></div>
+            <div class="app-content">
+                <p>Tap for an answer</p>
+                <div class="magic-orb" onclick="askOrb()">
+                    <div class="orb-shine"></div>
+                    <div class="magic-text" id="orbText">?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="screen" id="appLove">
+            <div class="app-header"><i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i><span class="app-title">Love Calc</span></div>
+            <div class="app-content">
+                <input type="text" class="age-input" id="n1" placeholder="Name 1">
+                <input type="text" class="age-input" id="n2" placeholder="Name 2">
+                <button onclick="doLoveCalc()" class="game-btn" style="background:#ff758c; color:white;">CALCULATE</button>
+                <h1 id="loveRes" style="margin-top:20px; font-size:40px;"></h1>
+            </div>
+        </div>
+
+        <div class="screen" id="appGame">
+            <div class="app-header"><i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i><span class="app-title">Fun Games</span></div>
+            <div class="app-content">
+                <div class="age-box" style="margin-bottom:20px;">
+                    <h3 id="tdText">Truth or Dare?</h3>
+                </div>
+                <button onclick="playTD('Truth')" class="game-btn" style="background:#00c6ff;">TRUTH</button>
+                <button onclick="playTD('Dare')" class="game-btn" style="background:#ff4081; color:white;">DARE</button>
+            </div>
+        </div>
+
+        <div class="screen" id="appDiary">
+            <div class="app-header">
+                <i class="fa-solid fa-arrow-left back-btn" onclick="goHome()"></i>
+                <span class="app-title">Diary</span>
+                <i class="fa-solid fa-save" onclick="saveDiary()" style="margin-left:auto; cursor:pointer;"></i>
+            </div>
+            <textarea style="width:100%; height:100%; background:#111; border:none; color:#fff; padding:20px; outline:none;" id="diaryText" placeholder="Dear Diary..."></textarea>
+        </div>
+
     </div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    // ✅ VERIFIED API KEY
-    const API_KEY = "AlzaSyCoxQEqblhAH4ZAmSHZljpJbqry7AdT6sY"; 
-
-    // ✅ TONTON FRIENDS STICKERS
-    const STICKERS = {
-        bella: "https://i.pinimg.com/736x/82/38/53/8238531eb4313264eb789b71e1fc2224.jpg", // Cute Calico Cat
-        yuta: "https://i.pinimg.com/736x/2c/80/d2/2c80d226a35022e37996c1647469a478.jpg"  // Cute Shiba Inu
+    // --- NAVIGATION ---
+    window.openApp = (id) => {
+        document.getElementById(id).classList.add('active');
+        if(id === 'appDate') loadDate();
+        if(id === 'appDiary') loadDiary();
     };
-
-    const AGENTS = {
-        khona: {
-            name: "Khona",
-            color: "#ff3366", // Pink
-            grad: "linear-gradient(to right, #ff3366, #bc2a8d)",
-            icon: STICKERS.bella,
-            prompt: `You are Khona. Role: User's WIFE. Personality: Sensitive, cute, cries easily (😭), speaks Banglish. Call user 'Nihan'.`,
-            first: "Nihan! Tumi eshecho? 🥺 I missed you! ❤️"
-        },
-        nihan: {
-            name: "Nihan",
-            color: "#0084ff", // Blue
-            grad: "linear-gradient(to right, #00c6ff, #0072ff)",
-            icon: STICKERS.yuta,
-            prompt: `You are Nihan. Role: User's HUSBAND. Personality: Protective, cool, speaks Banglish. Call user 'Pagli'.`,
-            first: "Ki re pagli? 😼 Eto deri keno? I was waiting. ❤️"
-        }
-    };
-
-    let currentAgent = null;
-    let chatSession;
-    let genAI;
-
-    // --- START CHAT ---
-    window.startChat = async function(key) {
-        currentAgent = AGENTS[key];
-        
-        // Update Icons & Text Color
-        const themeIcons = document.querySelectorAll('.theme-icon');
-        themeIcons.forEach(icon => {
-            icon.style.color = currentAgent.color;
+    window.goHome = () => {
+        document.querySelectorAll('.screen').forEach(s => {
+            if(!s.classList.contains('home')) s.classList.remove('active');
         });
-
-        document.getElementById('headerName').innerText = currentAgent.name;
-        document.getElementById('headerIcon').style.backgroundImage = `url('${currentAgent.icon}')`;
-
-        document.getElementById('screenSelect').classList.add('hidden');
-        document.getElementById('screenChat').classList.remove('hidden');
-
-        // Gemini Connection
-        try {
-            genAI = new GoogleGenerativeAI(API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            
-            chatSession = model.startChat({
-                history: [
-                    { role: "user", parts: [{ text: "System Instruction: " + currentAgent.prompt }] },
-                    { role: "model", parts: [{ text: "Ok." }] }
-                ]
-            });
-
-            setTimeout(() => addMsg(currentAgent.first, 'ai'), 600);
-
-        } catch (error) {
-            console.error(error);
-            alert("API Connection Failed. Please reload.");
-        }
     };
 
-    // --- SEND LOGIC ---
-    async function handleSend() {
-        const input = document.getElementById('userInput');
+    // --- 1. CHAT ---
+    const API_KEY = "AlzaSyCoxQEqblhAH4ZAmSHZljpJbqry7AdT6sY";
+    let chatSession;
+    try {
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        chatSession = model.startChat({
+             history: [{ role: "user", parts: [{ text: "You are Khona. Cute wife. Speak Banglish." }] }, { role: "model", parts: [{ text: "Meow! Ok." }] }]
+        });
+    } catch(e){}
+
+    window.sendChat = async () => {
+        const input = document.getElementById('chatInput');
         const text = input.value.trim();
         if(!text) return;
-
         addMsg(text, 'user');
         input.value = '';
-        toggleSendBtn();
-        
-        const typing = document.getElementById('typingIndicator');
-        typing.style.display = 'block';
-        scrollToBottom();
-
         try {
             const result = await chatSession.sendMessage(text);
-            const response = result.response.text();
-            
-            typing.style.display = 'none';
-            addMsg(response, 'ai');
-
-        } catch (error) {
-            typing.style.display = 'none';
-            addMsg("Connection error... 🥺", 'ai');
-        }
-    }
+            addMsg(result.response.text(), 'ai');
+        } catch(e) { addMsg("Connection Error 😿", 'ai'); }
+    };
 
     function addMsg(text, sender) {
-        const feed = document.getElementById('feed');
-        const row = document.createElement('div');
-        row.className = `msg-row ${sender}`;
-        
-        let avatarHTML = '';
-        let bubbleStyle = '';
-
-        if(sender === 'ai') {
-            avatarHTML = `<div class="tiny-avatar" style="background-image: url('${currentAgent.icon}')"></div>`;
-        } else {
-            bubbleStyle = `background: ${currentAgent.grad}; border:none;`;
-        }
-
-        let fmt = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-
-        row.innerHTML = `
-            ${avatarHTML}
-            <div class="bubble" style="${bubbleStyle}">
-                ${fmt}
-            </div>
-        `;
-
-        feed.appendChild(row);
-        scrollToBottom();
-    }
-
-    function scrollToBottom() {
-        const feed = document.getElementById('feed');
+        const feed = document.getElementById('chatFeed');
+        const div = document.createElement('div');
+        div.className = `msg-row ${sender}`;
+        div.innerHTML = `<div class="bubble ${sender === 'user' ? 'user-bubble' : 'ai-bubble'}">${text}</div>`;
+        feed.appendChild(div);
         feed.scrollTop = feed.scrollHeight;
     }
 
-    // --- UTILS ---
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const likeBtn = document.getElementById('likeBtn');
+    // --- 2. MUSIC ---
+    window.toggleMusic = (btn) => {
+        const audio = document.getElementById('audioPlayer');
+        const icon = btn.querySelector('i');
+        if (audio.paused) { audio.play(); icon.className = "fa-solid fa-circle-pause"; } 
+        else { audio.pause(); icon.className = "fa-solid fa-circle-play"; }
+    };
 
-    function toggleSendBtn() {
-        if(userInput.value.trim() !== "") {
-            sendBtn.style.display = 'block';
-            likeBtn.style.display = 'none';
-        } else {
-            sendBtn.style.display = 'none';
-            likeBtn.style.display = 'block';
-        }
-        userInput.style.height = '24px';
-        userInput.style.height = userInput.scrollHeight + 'px';
-    }
+    // --- 3. AGE CALCULATOR (LOGIC) ---
+    window.calculateAge = () => {
+        const dobVal = document.getElementById('dobInput').value;
+        if(!dobVal) return;
+        const dob = new Date(dobVal);
+        const now = new Date();
+        let years = now.getFullYear() - dob.getFullYear();
+        let months = now.getMonth() - dob.getMonth();
+        let days = now.getDate() - dob.getDate();
 
-    userInput.addEventListener('input', toggleSendBtn);
-    sendBtn.addEventListener('click', handleSend);
-    userInput.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
+        if (months < 0 || (months === 0 && days < 0)) { years--; months += 12; }
+        if (days < 0) {
+            const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            days += prevMonth.getDate();
+            months--;
         }
-    });
+        
+        const res = document.getElementById('ageResult');
+        res.innerHTML = `${years}Y ${months}M ${days}D`;
+        res.style.display = 'block';
+    };
+
+    // --- 4. MOOD SCANNER (LOGIC) ---
+    let scanTimer;
+    const MOODS = ["Horny 😈", "Romantic ❤️", "Angry 😠", "Hungry 🍔", "Naughty 😜", "Sleepy 😴"];
+    
+    window.startScan = () => {
+        document.getElementById('fingerprint').classList.add('scanning');
+        document.getElementById('scanLine').style.display = 'block';
+        document.getElementById('moodResult').innerText = "Scanning...";
+        scanTimer = setTimeout(() => {
+            const mood = MOODS[Math.floor(Math.random() * MOODS.length)];
+            document.getElementById('moodResult').innerText = mood;
+            stopScan();
+        }, 2000);
+    };
+    
+    window.stopScan = () => {
+        clearTimeout(scanTimer);
+        document.getElementById('fingerprint').classList.remove('scanning');
+        document.getElementById('scanLine').style.display = 'none';
+    };
+
+    // --- 5. MAGIC ORB (LOGIC) ---
+    const ANSWERS = ["Yes", "No", "Maybe", "Ask Khona", "Definetly", "Never"];
+    window.askOrb = () => {
+        const txt = document.getElementById('orbText');
+        txt.innerText = "...";
+        setTimeout(() => {
+            txt.innerText = ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
+        }, 500);
+    };
+
+    // --- 6. OTHERS (Date, Love, Game, Diary) ---
+    window.calcDays = () => {
+        const s = document.getElementById('startDate').value;
+        if(s) {
+            localStorage.setItem('sm_date', s);
+            const d = Math.ceil(Math.abs(new Date() - new Date(s)) / (86400000));
+            document.getElementById('daysCount').innerText = d;
+        }
+    };
+    window.loadDate = () => { const s = localStorage.getItem('sm_date'); if(s) { document.getElementById('startDate').value = s; calcDays(); } };
+    
+    window.doLoveCalc = () => {
+        if(document.getElementById('n1').value && document.getElementById('n2').value)
+            document.getElementById('loveRes').innerText = (Math.floor(Math.random()*20)+80) + "%";
+    };
+
+    window.playTD = (type) => {
+        const t = type==='Truth'?["Secret?","Crush?"]:["Dance!","Selfie!"];
+        document.getElementById('tdText').innerText = t[Math.floor(Math.random()*t.length)];
+    };
+
+    window.saveDiary = () => { localStorage.setItem('sm_diary', document.getElementById('diaryText').value); alert("Saved!"); };
+    window.loadDiary = () => { const t = localStorage.getItem('sm_diary'); if(t) document.getElementById('diaryText').value = t; };
 
 </script>
 </body>
