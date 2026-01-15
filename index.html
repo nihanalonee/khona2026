@@ -1,442 +1,764 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ffb7c5"> <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Magic Unicorn Surprise! 🦄</title>
-
-<style>
-    /* =============================================================================
-       CORE STYLESHEET - DUAL MODE (CUTE / DARK)
-       ============================================================================= */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f0c29">
+    <title>Soulmate OS | Advanced AI Companion</title>
     
-    :root {
-        --bg-cute: #ffb7c5;
-        --text-cute: #d63384;
-        --bg-dark: #000000;
-        --text-dark: #00ff41;
-        --alert: #ff0000;
-        --font-term: 'Courier New', Courier, monospace;
-        --font-cute: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-    }
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
-    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
-    
-    body, html {
-        width: 100%; height: 100%; overflow: hidden;
-        transition: background 0.1s;
-    }
+    <style>
+        /* =========================================
+           1. CORE VARIABLES & RESET
+           ========================================= */
+        :root {
+            /* Colors - Dynamic via JS */
+            --primary: #ff4d6d;
+            --primary-dim: rgba(255, 77, 109, 0.2);
+            --gradient: linear-gradient(135deg, #ff4d6d, #ff8fa3);
+            
+            /* Backgrounds */
+            --bg-dark: #050507;
+            --bg-panel: rgba(20, 20, 25, 0.7);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
 
-    /* --- CUTE MODE INTERFACE --- */
-    #interface-cute {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: var(--bg-cute); z-index: 9999;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        transition: transform 0.5s ease-in;
-    }
+            /* Text */
+            --text-main: #ffffff;
+            --text-muted: #888899;
+            --text-highlight: #ff4d6d;
 
-    .unicorn-bounce {
-        font-size: 80px; margin-bottom: 20px;
-        animation: bounce 2s infinite;
-    }
+            /* Chat Bubbles */
+            --bubble-user: linear-gradient(135deg, var(--primary), #ff8fa3);
+            --bubble-ai: rgba(255, 255, 255, 0.08);
 
-    .cute-title {
-        font-family: var(--font-cute); color: var(--text-cute);
-        font-size: 28px; font-weight: bold; text-align: center;
-        margin-bottom: 40px; text-shadow: 2px 2px 0px #fff;
-    }
+            /* System */
+            --radius-xl: 30px;
+            --radius-md: 16px;
+            --radius-sm: 8px;
+            --shadow-glow: 0 0 20px var(--primary-dim);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            --anim-speed: 0.3s;
+        }
 
-    .magic-btn {
-        background: white; border: 4px solid white;
-        padding: 20px 50px; border-radius: 50px;
-        font-family: var(--font-cute); font-size: 22px;
-        color: var(--text-cute); font-weight: bold;
-        box-shadow: 0 10px 20px rgba(214, 51, 132, 0.3);
-        cursor: pointer; animation: pulse-cute 1.5s infinite;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
 
-    /* --- DARK MODE / HACKER INTERFACE --- */
-    #interface-dark {
-        display: none; /* Hidden initially */
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: var(--bg-dark); color: var(--text-dark);
-        font-family: var(--font-term); z-index: 100;
-        padding: 10px;
-    }
+        /* Canvas Background */
+        #particleCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.6;
+        }
 
-    /* MONITORING HUD */
-    #hud-layer {
-        position: absolute; top: 10px; right: 10px;
-        width: 150px; font-size: 10px; text-align: right;
-        opacity: 0.7; color: var(--text-dark);
-        border: 1px solid var(--text-dark); padding: 5px;
-        background: rgba(0, 20, 0, 0.8);
-    }
+        /* =========================================
+           2. APP SHELL & LAYOUT
+           ========================================= */
+        .os-container {
+            width: 100%; height: 100%;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            transition: var(--anim-speed);
+        }
 
-    /* LAYERS */
-    #layer-crt {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), 
-                    linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
-        background-size: 100% 2px, 3px 100%;
-        pointer-events: none; z-index: 500;
-    }
+        @media (min-width: 600px) {
+            .os-container {
+                width: 450px;
+                height: 90vh;
+                border-radius: var(--radius-xl);
+                border: 1px solid var(--glass-border);
+                box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+            }
+        }
 
-    #layer-canvas {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        opacity: 0.2; z-index: 0;
-    }
+        /* Loading Screen */
+        .loader-screen {
+            position: absolute; inset: 0;
+            background: #000;
+            z-index: 999;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity 0.8s ease;
+        }
+        .loader-logo { font-size: 40px; margin-bottom: 20px; animation: pulse 2s infinite; color: var(--primary); }
+        .loader-bar { width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
+        .loader-progress { width: 0%; height: 100%; background: var(--primary); transition: width 0.5s; }
 
-    /* SCREENS CONTAINER */
-    #main-console {
-        position: relative; z-index: 50;
-        width: 100%; height: 90%;
-        display: flex; flex-direction: column;
-        justify-content: flex-end;
-    }
+        /* =========================================
+           3. SELECTION UI
+           ========================================= */
+        .view-section {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0; pointer-events: none; transform: scale(0.9);
+            background: rgba(0,0,0,0.6);
+        }
 
-    .log-line {
-        font-size: 11px; margin: 2px 0; word-break: break-all;
-        border-left: 2px solid transparent; padding-left: 5px;
-    }
-    
-    .l-info { color: var(--text-dark); border-color: var(--text-dark); }
-    .l-warn { color: yellow; border-color: yellow; }
-    .l-crit { color: var(--alert); border-color: var(--alert); font-weight: bold; text-shadow: 0 0 5px red; }
-    .l-sys  { color: cyan; }
+        .view-section.active {
+            opacity: 1; pointer-events: auto; transform: scale(1);
+            background: transparent;
+        }
 
-    /* PASSWORD GUI */
-    #auth-overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 15, 0, 0.95); z-index: 600;
-        display: none; align-items: center; justify-content: center;
-        flex-direction: column;
-    }
-    
-    .auth-box {
-        border: 2px solid var(--text-dark); padding: 30px;
-        width: 90%; max-width: 400px; text-align: center;
-        box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
-    }
-    
-    .pass-field {
-        font-size: 30px; border-bottom: 2px solid var(--text-dark);
-        margin: 20px 0; letter-spacing: 5px; color: white; min-height: 40px;
-    }
+        .hero-title {
+            text-align: center; margin-top: 15vh;
+            margin-bottom: 40px;
+        }
+        .hero-title h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 5px; }
+        .hero-title p { color: var(--text-muted); font-size: 14px; }
 
-    /* SCARE LAYERS */
-    #scare-layer {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: black; z-index: 2000; display: none;
-        align-items: center; justify-content: center;
-    }
-    .demon-face {
-        font-size: 20vw; color: red; font-weight: 900;
-        text-align: center; line-height: 0.8;
-        text-shadow: 5px 5px 0 white;
-        animation: shake 0.05s infinite;
-    }
+        .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 0 30px; }
+        
+        .char-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 25px 15px;
+            border-radius: var(--radius-md);
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: 0.3s;
+        }
+        .char-card:hover { transform: translateY(-5px); background: var(--glass-highlight); border-color: var(--primary); }
+        .char-card::before {
+            content: ''; position: absolute; top:0; left:0; width: 100%; height: 3px;
+            background: var(--card-color, #fff);
+        }
 
-    #popup-layer {
-        display: none; position: fixed; top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%; max-width: 350px;
-        background: #050000; border: 4px solid red;
-        padding: 20px; z-index: 3000; text-align: center;
-        box-shadow: 0 0 200px red;
-    }
+        .card-avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background-size: cover; margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 2px solid var(--card-color);
+        }
+        .card-name { font-weight: 700; font-size: 18px; margin-bottom: 5px; }
+        .card-desc { font-size: 11px; text-align: center; color: var(--text-muted); line-height: 1.4; }
 
-    /* ANIMATIONS */
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-    @keyframes pulse-cute { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-    @keyframes blink { 50% { opacity: 0; } }
-    @keyframes shake { 0% { transform: translate(2px, 2px) rotate(1deg); } 50% { transform: translate(-2px, -2px) rotate(-1deg); } 100% { transform: translate(0, 0); } }
-    @keyframes strobe { 0% { background: black; } 25% { background: #300; } 50% { background: black; } 75% { background: white; } 100% { background: black; } }
+        /* =========================================
+           4. CHAT UI - HEADER
+           ========================================= */
+        .chat-header {
+            height: 70px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 50;
+        }
 
-</style>
+        .agent-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .agent-img-sm {
+            width: 42px; height: 42px; border-radius: 50%;
+            background-size: cover; border: 2px solid var(--primary);
+            position: relative;
+        }
+        .status-badge {
+            position: absolute; bottom: -2px; right: -2px;
+            width: 12px; height: 12px; background: #00ff88;
+            border: 2px solid #000; border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+        .agent-info h3 { font-size: 16px; font-weight: 700; line-height: 1.1; }
+        .xp-bar-container { width: 100px; height: 4px; background: rgba(255,255,255,0.1); margin-top: 5px; border-radius: 2px; }
+        .xp-bar-fill { width: 0%; height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.5s; }
+        .level-text { font-size: 10px; color: var(--primary); margin-left: 5px; font-weight: 700; }
+
+        .header-controls i { 
+            width: 35px; height: 35px; border-radius: 50%; 
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--glass); color: var(--text-muted);
+            margin-left: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .header-controls i:hover { background: var(--primary); color: #fff; }
+
+        /* =========================================
+           5. CHAT FEED & MESSAGES
+           ========================================= */
+        .chat-feed {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+            scroll-behavior: smooth;
+        }
+        .chat-feed::-webkit-scrollbar { width: 4px; }
+        .chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+
+        .msg-row { display: flex; width: 100%; animation: slideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+        .msg-row.user { justify-content: flex-end; }
+        .msg-row.ai { justify-content: flex-start; }
+
+        .msg-bubble {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .msg-row.ai .msg-bubble { 
+            background: var(--bubble-ai); 
+            border-top-left-radius: 4px; 
+            border: 1px solid var(--glass-border);
+        }
+        .msg-row.user .msg-bubble { 
+            background: var(--bubble-user); 
+            border-bottom-right-radius: 4px; 
+            color: #fff; 
+            box-shadow: 0 4px 15px var(--primary-dim);
+        }
+
+        .msg-meta {
+            font-size: 10px; opacity: 0.6; margin-top: 5px; display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        /* Thought Process (Advanced) */
+        .ai-thought {
+            font-family: var(--font-code);
+            font-size: 11px;
+            color: var(--primary);
+            background: rgba(255, 77, 109, 0.05);
+            padding: 6px 10px;
+            border-left: 2px solid var(--primary);
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: block;
+        }
+
+        /* Image Message */
+        .msg-image { width: 100%; border-radius: 10px; margin-top: 5px; border: 1px solid var(--glass-border); }
+
+        /* =========================================
+           6. INPUT AREA
+           ========================================= */
+        .input-zone {
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            position: relative;
+        }
+        
+        .typing-pill {
+            position: absolute; top: -30px; left: 20px;
+            background: var(--glass); padding: 5px 12px;
+            border-radius: 12px; font-size: 11px; color: var(--text-muted);
+            display: none; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(5px);
+        }
+
+        .input-wrapper {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 8px 8px 8px 20px;
+            display: flex; align-items: center; gap: 10px;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+        .input-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-dim); }
+
+        textarea {
+            flex: 1; background: transparent; border: none; color: white;
+            font-size: 15px; outline: none; font-family: var(--font-main);
+            resize: none; height: 24px; max-height: 100px; padding-top: 2px;
+        }
+
+        .btn-send {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: var(--gradient); border: none; color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px var(--primary-dim);
+        }
+        .btn-send:hover { transform: scale(1.1) rotate(-10deg); }
+        .btn-send:disabled { background: #444; cursor: not-allowed; transform: none; }
+
+        /* =========================================
+           7. SETTINGS & MUSIC OVERLAY
+           ========================================= */
+        .overlay-panel {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 0;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            overflow: hidden;
+            transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border-top-left-radius: var(--radius-xl);
+            border-top-right-radius: var(--radius-xl);
+        }
+        .overlay-panel.open { height: 70%; border-top: 1px solid var(--glass-border); }
+
+        .panel-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .panel-content { padding: 20px; overflow-y: auto; height: calc(100% - 70px); }
+
+        /* Settings Items */
+        .setting-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid var(--glass-border);
+        }
+        .toggle-switch {
+            width: 45px; height: 24px; background: #333; border-radius: 12px;
+            position: relative; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-switch::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; background: #fff; border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch.active { background: var(--primary); }
+        .toggle-switch.active::after { left: 23px; }
+
+        /* Music Player UI */
+        .music-player {
+            background: var(--glass); border-radius: var(--radius-md);
+            padding: 15px; margin-bottom: 20px; border: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 15px;
+        }
+        .album-art { width: 50px; height: 50px; background: #333; border-radius: 8px; position: relative; overflow: hidden; }
+        .visualizer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: space-between; padding: 2px; }
+        .bar { width: 15%; background: var(--primary); animation: equalizer 1s infinite; }
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes equalizer { 0%, 100% { height: 20%; } 50% { height: 80%; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.95); opacity: 0.7; } }
+
+    </style>
 </head>
 <body>
 
-    <div id="interface-cute">
-        <div class="unicorn-bounce">🦄 ✨ 🌈</div>
-        <div class="cute-title">Want to see a<br>Magic Trick?</div>
-        <button class="magic-btn" onclick="Kernel.executeTrap()">Tap Here! 💖</button>
-        <div style="margin-top: 20px; color: #ff69b4; font-size: 12px;">Safe & Fun for everyone!</div>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="loader-screen" id="loader">
+        <div class="loader-logo"><i class="fa-solid fa-infinity"></i></div>
+        <div class="loader-bar"><div class="loader-progress" id="loadBar"></div></div>
+        <div style="margin-top: 10px; font-size: 12px; color: #666;">Initializing Soulmate AI Core...</div>
     </div>
 
-    <div id="interface-dark">
-        <canvas id="layer-canvas"></canvas>
-        <div id="layer-crt"></div>
+    <div class="os-container">
         
-        <div id="hud-layer">
-            CPU: <span id="cpu-val">0</span>%<br>
-            RAM: <span id="ram-val">0</span>MB<br>
-            NET: ENCRYPTED<br>
-            CAM: <span style="color:red" class="blink">ON</span>
-        </div>
-
-        <div id="main-console">
-            <div id="log-container"></div>
-        </div>
-
-        <div id="auth-overlay">
-            <div class="auth-box">
-                <div style="background:var(--text-dark); color:black; font-weight:bold; padding:5px;">SYSTEM OVERRIDE</div>
-                <div style="margin-top:20px; font-size:12px; color:#aaa;">AUTHENTICATION REQUIRED</div>
-                <div class="pass-field">
-                    <span id="pass-typed"></span><span class="blink">_</span>
+        <div class="view-section active" id="viewSelection">
+            <div class="hero-title">
+                <h1>Soulmate OS</h1>
+                <p>v3.0.1 (Ultimate Edition)</p>
+            </div>
+            
+            <div class="cards-grid">
+                <div class="char-card" style="--card-color: #ff4d6d;" onclick="App.startSession('khona')">
+                    <div class="card-avatar" style="background-image: url('https://img.freepik.com/free-photo/3d-render-cute-girl-with-bow_1057-436.jpg?w=740')"></div>
+                    <div class="card-name">Khona</div>
+                    <div class="card-desc">Your sensitive & cute wife. Loves poetry and you.</div>
                 </div>
-                <div id="auth-status" style="font-size:10px; color:#666;">WAITING...</div>
+
+                <div class="char-card" style="--card-color: #4facfe;" onclick="App.startSession('nihan')">
+                    <div class="card-avatar" style="background-image: url('https://img.freepik.com/free-photo/3d-illustration-teenager-with-funny-face-glasses_1142-40528.jpg')"></div>
+                    <div class="card-name">Nihan</div>
+                    <div class="card-desc">Your protective & manly partner. Possessive type.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="view-section" id="viewChat">
+            
+            <div class="chat-header">
+                <div class="agent-profile" onclick="Settings.toggle()">
+                    <div class="agent-img-sm" id="headerAvatar">
+                        <div class="status-badge"></div>
+                    </div>
+                    <div class="agent-info">
+                        <h3 id="headerName">Agent</h3>
+                        <div style="display:flex; align-items: center;">
+                            <div class="xp-bar-container"><div class="xp-bar-fill" id="xpBar"></div></div>
+                            <span class="level-text" id="lvlText">LVL 1</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <i class="fa-solid fa-music" onclick="Music.toggle()" title="Music"></i>
+                    <i class="fa-solid fa-sliders" onclick="Settings.toggle()" title="Settings"></i>
+                </div>
+            </div>
+
+            <div class="chat-feed" id="chatFeed"></div>
+
+            <div class="typing-pill" id="typingIndicator">
+                <i class="fa-solid fa-pen-nib"></i> typing...
+            </div>
+
+            <div class="input-zone">
+                <div class="input-wrapper">
+                    <textarea id="inputField" placeholder="Type a message..." rows="1"></textarea>
+                    <button class="btn-send" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+            <div class="overlay-panel" id="settingsPanel">
+                <div class="panel-header">
+                    <h3>Control Center</h3>
+                    <i class="fa-solid fa-xmark" onclick="Settings.toggle()" style="cursor:pointer; font-size: 20px;"></i>
+                </div>
+                <div class="panel-content">
+                    <div class="music-player">
+                        <div class="album-art">
+                            <div class="visualizer"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600;">Lofi Beats Radio</div>
+                            <div style="font-size: 11px; color: #888;">Relaxing Vibe • 24/7</div>
+                        </div>
+                        <i class="fa-solid fa-play" id="playBtn" onclick="Music.playPause()" style="margin-left: auto; cursor: pointer; color: var(--primary);"></i>
+                    </div>
+
+                    <div class="setting-item">
+                        <span>Sound Effects</span>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active'); AudioFX.enabled = !AudioFX.enabled"></div>
+                    </div>
+                    <div class="setting-item">
+                        <span>Clear History</span>
+                        <button onclick="App.clearData()" style="padding: 5px 10px; background: #333; color: white; border: none; border-radius: 5px; cursor: pointer;">Reset</button>
+                    </div>
+                    <div class="setting-item">
+                        <span>Logout</span>
+                        <button onclick="location.reload()" style="padding: 5px 10px; background: #d63031; color: white; border: none; border-radius: 5px; cursor: pointer;">Exit</button>
+                    </div>
+                    
+                    <div style="margin-top: 20px; font-size: 10px; color: #555; text-align: center;">
+                        Soulmate OS • Build 3045 • Powered by Pollinations AI
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="scare-layer">
-        <div class="demon-face">FUCK<br>YOU</div>
-    </div>
+    <script>
+        /**
+         * SOULMATE OS v3.0 CORE ENGINE
+         * Architecture: Modular Classes
+         */
 
-    <div id="popup-layer">
-        <h2 style="background:red; color:white; padding:10px; margin:-20px -20px 20px -20px;">⚠ DEVICE COMPROMISED ⚠</h2>
-        <div style="color:white; font-family:Arial; font-size:14px; line-height:1.5; margin-bottom:15px;">
-            ATTACKER: <b style="color:red">NIHAN</b><br>
-            CAMERA: <b style="color:#0f0">RECORDING...</b><br>
-            GPS: <b style="color:#0f0">SENT TO SERVER</b>
-        </div>
-        <h1 style="color:red; font-size:30px; font-weight:900; animation:blink 0.1s infinite;">NOW CRY!</h1>
-    </div>
+        // --- 1. CONFIGURATION ---
+        const CONFIG = {
+            agents: {
+                khona: {
+                    name: "Khona",
+                    color: "#ff4d6d",
+                    grad: "linear-gradient(135deg, #ff4d6d, #ff8fa3)",
+                    avatar: "https://img.freepik.com/free-photo/3d-render-cute-girl-with-bow_1057-436.jpg?w=740",
+                    prompt: "You are Khona. Role: User's WIFE. Personality: Highly Emotional, Cute, Banglish speaker. If user is rude, you cry. If user is romantic, you blush.",
+                    first: "Nihan! Tumi eshecho? 🥺 I missed you so much! Sara din tomar kotha vhabcilam. ❤️"
+                },
+                nihan: {
+                    name: "Nihan",
+                    color: "#4facfe",
+                    grad: "linear-gradient(135deg, #4facfe, #00f2fe)",
+                    avatar: "https://img.freepik.com/free-photo/3d-illustration-teenager-with-funny-face-glasses_1142-40528.jpg",
+                    prompt: "You are Nihan. Role: User's HUSBAND. Personality: Protective, Manly, Jealous, Banglish speaker. You call the user 'Pagli' or 'Babu'.",
+                    first: "Ki re pagli? 🤨 Eto deri korle keno? I was waiting. Ki korcho? ❤️"
+                }
+            },
+            api: "https://text.pollinations.ai/"
+        };
 
-<script>
-/**
- * =============================================================================
- * NIHAN KERNEL V100.0 - "THE ULTIMATE PRANK ENGINE"
- * Architecture: Object Oriented, Modular, Procedural Generation
- * =============================================================================
- */
-
-// --- 1. FAKE FILE SYSTEM DATABASE (Procedural Data) ---
-const FileSystem = {
-    dirs: ["/bin", "/etc", "/home/user", "/var/www", "/usr/lib", "/sys/kernel", "/dev/cam0"],
-    files: ["passwords.txt", "banking_info.db", "gallery.zip", "private_chat.log", "camera_dump.mp4"],
-    tasks: ["Injecting", "Bypassing", "Downloading", "Encrypting", "Overriding"],
-    
-    // Generate a random scary log line
-    generateLog: function() {
-        const type = Math.random() > 0.85 ? 'crit' : (Math.random() > 0.6 ? 'warn' : 'info');
-        const dir = this.dirs[Math.floor(Math.random() * this.dirs.length)];
-        const file = this.files[Math.floor(Math.random() * this.files.length)];
-        const task = this.tasks[Math.floor(Math.random() * this.tasks.length)];
-        
-        let msg = "";
-        if (type === 'crit') msg = `CRITICAL FAILURE AT MEMORY 0x${Math.floor(Math.random()*999999).toString(16).toUpperCase()}`;
-        else if (type === 'warn') msg = `${task} ${dir}/${file}... [${Math.floor(Math.random()*100)}%]`;
-        else msg = `Accessed sector ${Math.floor(Math.random()*999)} in ${dir}`;
-
-        return { type: `l-${type}`, msg: `[${new Date().toLocaleTimeString()}] ${msg}` };
-    }
-};
-
-// --- 2. ADVANCED AUDIO ENGINE (Synthesizer) ---
-class AudioController {
-    constructor() {
-        this.ctx = null;
-        this.loops = [];
-    }
-
-    init() {
-        try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            this.ctx = new AudioContext();
-            // Unlock audio on iOS/Chrome
-            const buffer = this.ctx.createBuffer(1, 1, 22050);
-            const source = this.ctx.createBufferSource();
-            source.buffer = buffer;
-            source.connect(this.ctx.destination);
-            source.start(0);
-        } catch(e) { console.error("Audio init failed"); }
-    }
-
-    // High frequency beep
-    beep(freq, dur) {
-        if (!this.ctx) return;
-        const o = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        o.type = 'square';
-        o.frequency.value = freq;
-        g.gain.value = 0.1;
-        o.connect(g); g.connect(this.ctx.destination);
-        o.start(); o.stop(this.ctx.currentTime + dur);
-    }
-
-    // THE "HEADACHE" LOOP (Binaural Beats + High Pitch)
-    startAgonyLoop() {
-        if (!this.ctx) return;
-        
-        const loopId = setInterval(() => {
-            const t = this.ctx.currentTime;
-            
-            // Oscillator 1: High Screech
-            const o1 = this.ctx.createOscillator();
-            o1.type = 'sawtooth';
-            o1.frequency.setValueAtTime(4000, t);
-            o1.frequency.linearRampToValueAtTime(9000, t + 0.1); // Glitch up
-            
-            // Oscillator 2: Uncomfortable Low Hum
-            const o2 = this.ctx.createOscillator();
-            o2.type = 'sawtooth';
-            o2.frequency.setValueAtTime(50, t); // 50hz hum
-            
-            const g = this.ctx.createGain();
-            g.gain.setValueAtTime(2.0, t); // VERY LOUD
-            g.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-
-            o1.connect(g); o2.connect(g); g.connect(this.ctx.destination);
-            
-            o1.start(); o1.stop(t + 0.5);
-            o2.start(); o2.stop(t + 0.5);
-        }, 300); // Repeat very fast
-
-        this.loops.push(loopId);
-    }
-}
-
-// --- 3. GRAPHICS ENGINE (Matrix Rain) ---
-class GraphicsCore {
-    constructor() {
-        this.c = document.getElementById('layer-canvas');
-        this.ctx = this.c.getContext('2d');
-        this.resize();
-        window.onresize = () => this.resize();
-        this.chars = "01NIHAN";
-        this.drops = [];
-    }
-    resize() {
-        this.c.width = window.innerWidth;
-        this.c.height = window.innerHeight;
-        this.drops = Array(Math.floor(this.c.width / 12)).fill(1);
-    }
-    render() {
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-        this.ctx.fillRect(0, 0, this.c.width, this.c.height);
-        this.ctx.fillStyle = "#0F0";
-        this.ctx.font = "12px monospace";
-        for (let i = 0; i < this.drops.length; i++) {
-            const text = this.chars[Math.floor(Math.random() * this.chars.length)];
-            this.ctx.fillText(text, i * 12, this.drops[i] * 12);
-            if (this.drops[i] * 12 > this.c.height && Math.random() > 0.975) {
-                this.drops[i] = 0;
+        // --- 2. AUDIO ENGINE (Sound FX & Music) ---
+        class AudioEngine {
+            constructor() {
+                this.enabled = true;
+                this.isPlayingMusic = false;
+                // Simulated Audio Context (No actual files needed for click/pop/notifications)
+                this.synth = window.speechSynthesis; // Fallback for voice if needed
             }
-            this.drops[i]++;
-        }
-    }
-    start() { setInterval(() => this.render(), 33); }
-}
 
-// --- 4. KERNEL (MAIN LOGIC) ---
-const Kernel = {
-    audio: new AudioController(),
-    gfx: new GraphicsCore(),
-    pass: "NIHAN_X9",
-
-    // Step 1: Execute The Trap
-    executeTrap: async function() {
-        // A. Unlock Audio Context Instantly
-        this.audio.init();
-
-        // B. Switch Interface
-        document.getElementById('interface-cute').style.transform = "translateY(-100%)";
-        setTimeout(() => { document.getElementById('interface-cute').style.display = 'none'; }, 500);
-        document.getElementById('interface-dark').style.display = 'block';
-        document.querySelector('meta[name="theme-color"]').setAttribute("content", "#000000");
-
-        // C. Start Engines
-        this.gfx.start();
-        this.startSystemMonitor();
-        
-        // D. Start Vibration Loop (Infinite)
-        if(navigator.vibrate) {
-            navigator.vibrate(10000);
-            setInterval(() => navigator.vibrate(10000), 2000);
-        }
-
-        // E. Start Sound Loop
-        this.audio.startAgonyLoop();
-
-        // F. Begin Logic Sequence
-        await this.runTerminalSequence();
-    },
-
-    sleep: ms => new Promise(r => setTimeout(r, ms)),
-
-    startSystemMonitor: function() {
-        setInterval(() => {
-            document.getElementById('cpu-val').innerText = Math.floor(Math.random() * 100);
-            document.getElementById('ram-val').innerText = Math.floor(Math.random() * 16000);
-        }, 500);
-    },
-
-    runTerminalSequence: async function() {
-        const container = document.getElementById('log-container');
-        
-        // Generate massive amounts of logs quickly
-        for(let i=0; i<60; i++) {
-            const data = FileSystem.generateLog();
-            const div = document.createElement('div');
-            div.className = `log-line ${data.type}`;
-            div.innerText = data.msg;
-            container.appendChild(div);
-            window.scrollTo(0, document.body.scrollHeight);
+            playClick() { if(this.enabled) this._tone(600, 0.05); }
+            playSend() { if(this.enabled) this._tone(800, 0.1); }
+            playReceive() { if(this.enabled) this._tone(400, 0.15); }
             
-            // Random Beep
-            if(Math.random() > 0.7) this.audio.beep(800, 0.05);
-            
-            await this.sleep(Math.random() * 30 + 10); // Super fast scrolling
+            // Generate beep using Web Audio API
+            _tone(freq, duration) {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = freq;
+                gain.gain.value = 0.05;
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            }
+
+            // Simulated Music Player
+            toggleMusic() {
+                this.isPlayingMusic = !this.isPlayingMusic;
+                const btn = document.getElementById('playBtn');
+                if(this.isPlayingMusic) {
+                    btn.className = "fa-solid fa-pause";
+                    document.querySelector('.visualizer').style.opacity = "1";
+                    // Here you would hook up a real Youtube Iframe or MP3
+                } else {
+                    btn.className = "fa-solid fa-play";
+                    document.querySelector('.visualizer').style.opacity = "0.3";
+                }
+            }
         }
-        
-        this.runAuthSequence();
-    },
 
-    runAuthSequence: async function() {
-        const overlay = document.getElementById('auth-overlay');
-        const input = document.getElementById('pass-typed');
-        const status = document.getElementById('auth-status');
-        overlay.style.display = 'flex';
+        // --- 3. BACKGROUND PARTICLE SYSTEM ---
+        class ParticleSystem {
+            constructor() {
+                this.canvas = document.getElementById('particleCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                this.particles = [];
+                window.addEventListener('resize', () => this.resize());
+                this.init();
+                this.animate();
+            }
 
-        await this.sleep(500);
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
 
-        for(let char of this.pass) {
-            input.innerText += char;
-            this.audio.beep(1200, 0.05);
-            await this.sleep(100);
+            init() {
+                for(let i=0; i<50; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        size: Math.random() * 2,
+                        speedY: Math.random() * 0.5 + 0.1
+                    });
+                }
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = 'white';
+                this.particles.forEach(p => {
+                    p.y -= p.speedY;
+                    if(p.y < 0) p.y = this.canvas.height;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                    this.ctx.fill();
+                });
+                requestAnimationFrame(() => this.animate());
+            }
         }
 
-        status.innerText = "ACCESS GRANTED - SYSTEM COMPROMISED";
-        status.style.color = "#0f0";
-        this.audio.beep(200, 0.5);
+        // --- 4. APP LOGIC ---
+        const AudioFX = new AudioEngine();
+        const Particles = new ParticleSystem();
 
-        await this.sleep(800);
-        this.triggerFinalScare();
-    },
+        const App = {
+            agent: null,
+            history: [],
+            xp: 0,
+            level: 1,
 
-    triggerFinalScare: function() {
-        // Hide GUI
-        document.getElementById('auth-overlay').style.display = 'none';
-        document.getElementById('main-console').style.display = 'none';
-        
-        // Show Scare
-        document.getElementById('scare-layer').style.display = 'flex';
-        
-        // Strobe Effect
-        document.body.style.animation = "strobe 0.05s infinite";
+            init: function() {
+                // Simulate Loading
+                setTimeout(() => { document.getElementById('loadBar').style.width = '100%'; }, 100);
+                setTimeout(() => { document.getElementById('loader').style.opacity = '0'; }, 800);
+                setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 1600);
+                
+                // Event Listeners
+                document.getElementById('sendBtn').onclick = this.sendMessage.bind(this);
+                document.getElementById('inputField').addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); }
+                });
+            },
 
-        // Popup
-        setTimeout(() => {
-            document.getElementById('popup-layer').style.display = 'block';
-        }, 300);
-    }
-};
+            startSession: function(key) {
+                AudioFX.playClick();
+                this.agent = CONFIG.agents[key];
+                
+                // UI Updates
+                document.documentElement.style.setProperty('--primary', this.agent.color);
+                document.documentElement.style.setProperty('--bubble-user', this.agent.grad);
+                document.getElementById('headerName').innerText = this.agent.name;
+                document.getElementById('headerAvatar').style.backgroundImage = `url('${this.agent.avatar}')`;
 
-</script>
+                // Switch Views
+                document.getElementById('viewSelection').classList.remove('active');
+                document.getElementById('viewChat').classList.add('active');
+
+                // Load Memory
+                this.loadChat(key);
+            },
+
+            loadChat: function(key) {
+                const saved = localStorage.getItem(`soulmate_${key}`);
+                const savedXP = localStorage.getItem(`xp_${key}`);
+                
+                if(savedXP) { this.xp = parseInt(savedXP); this.updateLevel(); }
+
+                if(saved) {
+                    this.history = JSON.parse(saved);
+                    this.history.forEach(msg => {
+                        if(msg.role !== 'system') this.renderMessage(msg.content, msg.role, null, false);
+                    });
+                } else {
+                    this.history = [{ role: 'system', content: this.agent.prompt }];
+                    setTimeout(() => {
+                        this.receiveMessage(this.agent.first, "Heart rate syncing...");
+                    }, 1000);
+                }
+            },
+
+            sendMessage: async function() {
+                const input = document.getElementById('inputField');
+                const text = input.value.trim();
+                if(!text) return;
+
+                AudioFX.playSend();
+                this.renderMessage(text, 'user');
+                input.value = '';
+                this.history.push({ role: 'user', content: text });
+                this.save();
+
+                // XP Gain
+                this.xp += 10; this.updateLevel();
+
+                // Show Typing
+                const typing = document.getElementById('typingIndicator');
+                typing.style.display = 'block';
+
+                try {
+                    const response = await fetch(CONFIG.api, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            messages: this.history,
+                            model: 'openai',
+                            seed: Math.floor(Math.random() * 9999)
+                        })
+                    });
+                    
+                    if(!response.ok) throw new Error("Network Error");
+                    const aiText = await response.text();
+
+                    typing.style.display = 'none';
+                    
+                    // Logic for Thoughts
+                    let thought = "Analyzing sentiment...";
+                    if(text.includes('love')) thought = "Oxytocin levels rising... 🥰";
+                    if(text.includes('angry') || text.includes('hate')) thought = "Warning: Emotional Distress detected ⚠️";
+
+                    this.receiveMessage(aiText, thought);
+
+                } catch (e) {
+                    typing.style.display = 'none';
+                    this.receiveMessage("Server connection lost... I can't reach you 🥺", "System Error");
+                }
+            },
+
+            receiveMessage: function(text, thought) {
+                AudioFX.playReceive();
+                this.renderMessage(text, 'assistant', thought);
+                this.history.push({ role: 'assistant', content: text });
+                this.save();
+            },
+
+            renderMessage: function(text, role, thought = null, animate = true) {
+                const feed = document.getElementById('chatFeed');
+                const row = document.createElement('div');
+                row.className = `msg-row ${role === 'user' ? 'user' : 'ai'}`;
+                if(!animate) row.style.animation = 'none';
+
+                // Rich Text Formatting
+                let fmt = text
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                    .replace(/`(.*?)`/g, '<code style="background:#333; padding:2px 4px; border-radius:4px;">$1</code>')
+                    .replace(/\n/g, '<br>');
+
+                // Logic to "Simulate" sending an image if keyword found (e.g., [send photo])
+                if(fmt.toLowerCase().includes('photo') || fmt.toLowerCase().includes('pic')) {
+                     fmt += `<img src="https://source.unsplash.com/random/300x200/?${role==='user'?'couple':'cute'}" class="msg-image" alt="Attachment">`;
+                }
+
+                let html = `
+                    <div class="msg-bubble">
+                        ${thought ? `<span class="ai-thought">Process: ${thought}</span>` : ''}
+                        ${fmt}
+                        <div class="msg-meta">
+                            <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            ${role === 'user' ? '<i class="fa-solid fa-check-double"></i>' : ''}
+                        </div>
+                    </div>
+                `;
+                
+                row.innerHTML = html;
+                feed.appendChild(row);
+                feed.scrollTop = feed.scrollHeight;
+            },
+
+            updateLevel: function() {
+                this.level = Math.floor(this.xp / 100) + 1;
+                const progress = this.xp % 100;
+                document.getElementById('xpBar').style.width = progress + '%';
+                document.getElementById('lvlText').innerText = 'LVL ' + this.level;
+                
+                // Save XP
+                localStorage.setItem(`xp_${this.agent.name.toLowerCase()}`, this.xp);
+            },
+
+            save: function() {
+                localStorage.setItem(`soulmate_${this.agent.name.toLowerCase()}`, JSON.stringify(this.history));
+            },
+
+            clearData: function() {
+                if(confirm("Factory Reset: Wipe all memories?")) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+        };
+
+        // --- 5. UI CONTROLLERS ---
+        const Settings = {
+            isOpen: false,
+            toggle: function() {
+                this.isOpen = !this.isOpen;
+                const panel = document.getElementById('settingsPanel');
+                if(this.isOpen) panel.classList.add('open');
+                else panel.classList.remove('open');
+                AudioFX.playClick();
+            }
+        };
+
+        const Music = {
+            toggle: function() {
+                Settings.toggle(); // Open panel to show music
+            },
+            playPause: function() {
+                AudioFX.toggleMusic();
+            }
+        };
+
+        // Start App
+        window.onload = () => App.init();
+
+    </script>
 </body>
 </html>
