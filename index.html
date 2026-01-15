@@ -6,450 +6,360 @@
     <meta name="theme-color" content="#000000">
     <title>Soulmate Chat</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 
     <style>
-        /* =========================================
-           1. MESSENGER / INSTAGRAM THEME VARIABLES
-           ========================================= */
+        /* --- CSS VARIABLES --- */
         :root {
-            /* Messenger/Insta Colors */
             --bg-color: #000000;
-            --surface-color: #1c1c1d;
-            --input-bg: #2c2c2e;
-            --text-main: #ffffff;
-            --text-sub: #8e8e93;
-            
-            /* Dynamic Gradients (Will change via JS) */
-            --primary-grad: linear-gradient(to right, #ff3366, #bc2a8d); /* Insta Default */
-            
-            /* Dimensions */
-            --radius-bubble: 22px;
-            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --input-bg: #1c1c1e;
+            --text-white: #ffffff;
+            --primary-blue: #0084ff;
+            --primary-pink: #ff3366; 
+            --bubble-gray: #262626; 
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: var(--font-main);
-            background: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-white);
             height: 100dvh;
-            overflow: hidden;
             display: flex;
-            justify-content: center;
-        }
-
-        /* =========================================
-           2. APP SHELL (Mobile UI)
-           ========================================= */
-        .app-frame {
-            width: 100%; height: 100%;
-            position: relative;
-            background: var(--bg-color);
-            display: flex; flex-direction: column;
+            flex-direction: column;
             overflow: hidden;
         }
 
-        @media (min-width: 600px) {
-            .app-frame {
-                width: 400px; height: 95vh;
-                margin-top: 2.5vh;
-                border-radius: 35px;
-                border: 1px solid #333;
-                box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            }
-        }
-
-        /* =========================================
-           3. SELECTION SCREEN (Story Style)
-           ========================================= */
-        .view {
+        /* --- 1. SELECTION SCREEN --- */
+        .view-section {
             position: absolute; inset: 0;
+            background: #000; z-index: 10;
             display: flex; flex-direction: column;
-            transition: 0.4s ease;
-            background: var(--bg-color);
-            z-index: 1; opacity: 0; pointer-events: none;
+            transition: 0.3s ease;
         }
-        .view.active { opacity: 1; pointer-events: auto; z-index: 10; }
+        .view-section.hidden { opacity: 0; pointer-events: none; z-index: 0; }
 
-        .select-header { padding: 40px 20px; text-align: center; }
-        .select-header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        .story-container {
-            display: flex; justify-content: center; gap: 30px; margin-top: 20px;
+        .story-wrapper {
+            flex: 1; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; gap: 40px;
         }
-
-        .story-circle {
-            display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer;
+        .story-title { 
+            font-size: 26px; font-weight: 700; margin-bottom: 10px; 
+            background: linear-gradient(45deg, #ff3366, #0084ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         
+        .story-row { display: flex; gap: 40px; }
+        .story-item { display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; }
+        
+        /* Insta Story Ring */
         .story-ring {
-            width: 90px; height: 90px;
-            border-radius: 50%; padding: 3px;
-            /* Gradient Border like Insta Story */
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); 
-            transition: 0.3s;
+            width: 100px; height: 100px; border-radius: 50%; padding: 4px;
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            transition: 0.2s; position: relative;
         }
-        .story-ring.nihan-ring { background: linear-gradient(45deg, #00c6ff, #0072ff); }
-
-        .story-img {
-            width: 100%; height: 100%;
-            border-radius: 50%; border: 4px solid #000;
-            background-size: cover; background-position: center;
-        }
+        .ring-blue { background: linear-gradient(45deg, #00c6ff, #0072ff); }
         
-        .story-circle:active .story-ring { transform: scale(0.95); }
-        .story-name { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
+        .story-item:active .story-ring { transform: scale(0.9); }
+        
+        .story-img {
+            width: 100%; height: 100%; border-radius: 50%;
+            border: 4px solid #000; background-size: cover; background-position: center;
+            background-color: #222; /* Fallback color */
+        }
+        .story-name { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* =========================================
-           4. CHAT INTERFACE (Messenger Style)
-           ========================================= */
+        /* --- 2. CHAT SCREEN --- */
         .chat-header {
-            padding: 10px 15px; height: 65px;
+            height: 65px; padding: 0 15px;
             display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
-            border-bottom: 1px solid #1c1c1d;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1c1c1e;
             z-index: 50;
         }
-
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .back-btn { font-size: 24px; color: var(--text-main); cursor: pointer; }
         
-        .profile-pic { width: 40px; height: 40px; border-radius: 50%; background-size: cover; position: relative; }
-        .active-badge { width: 12px; height: 12px; background: #31a24c; border: 2px solid #000; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-icon { font-size: 24px; cursor: pointer; padding: 5px; }
         
-        .header-info h3 { font-size: 16px; font-weight: 600; }
-        .header-info p { font-size: 11px; color: var(--text-sub); }
+        .profile-bubble { width: 40px; height: 40px; border-radius: 50%; background-size: cover; position: relative; border: 1px solid #333; }
+        .active-dot { width: 12px; height: 12px; background: #31a24c; border: 2px solid #000; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
+        
+        .header-actions { display: flex; gap: 25px; font-size: 22px; }
+        .theme-icon { color: var(--primary-blue); cursor: pointer; }
 
-        .header-icons { display: flex; gap: 20px; color: var(--primary); font-size: 20px; }
-        .header-icons i { cursor: pointer; color: #0084ff; /* Messenger Blue Default */ }
-
-        /* Chat Feed */
+        /* CHAT FEED */
         .chat-feed {
-            flex: 1; overflow-y: auto; padding: 15px;
-            display: flex; flex-direction: column; gap: 4px; /* Tight grouping like Messenger */
+            flex: 1; overflow-y: auto; 
+            padding: 15px; padding-bottom: 100px; /* More space for input */
+            display: flex; flex-direction: column; gap: 8px;
         }
-
-        .msg-row { display: flex; width: 100%; margin-bottom: 10px; }
+        
+        .msg-row { display: flex; width: 100%; margin-bottom: 5px; }
         .msg-row.user { justify-content: flex-end; }
-        .msg-row.ai { justify-content: flex-start; align-items: flex-end; gap: 8px; }
-
-        .avatar-tiny { width: 28px; height: 28px; border-radius: 50%; background-size: cover; margin-bottom: 5px; }
-
+        .msg-row.ai { justify-content: flex-start; align-items: flex-end; gap: 10px; }
+        
+        .tiny-avatar { width: 32px; height: 32px; border-radius: 50%; background-size: cover; margin-bottom: 5px; }
+        
         .bubble {
-            max-width: 75%; padding: 10px 16px;
-            font-size: 15px; line-height: 1.4; word-wrap: break-word;
+            max-width: 75%; padding: 12px 16px;
+            font-size: 16px; line-height: 1.4; word-wrap: break-word;
             position: relative;
         }
+        .ai .bubble { background: var(--bubble-gray); border-radius: 20px; border-bottom-left-radius: 5px; }
+        .user .bubble { background: var(--primary-blue); color: white; border-radius: 20px; border-bottom-right-radius: 5px; }
 
-        /* AI Bubble (Gray) */
-        .ai .bubble {
-            background: #262626; /* Dark Gray */
-            color: #fff;
-            border-radius: 20px;
-            border-bottom-left-radius: 5px;
+        /* --- 3. INPUT BAR (FIXED BOTTOM) --- */
+        .input-container {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #000; 
+            padding: 12px 15px;
+            /* CRITICAL FIX FOR MOBILE NAV BAR */
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            display: flex; align-items: center; gap: 15px;
+            border-top: 1px solid #1c1c1e;
+            z-index: 100;
         }
 
-        /* User Bubble (Gradient) */
-        .user .bubble {
-            background: var(--primary-grad);
-            color: white;
-            border-radius: 20px;
-            border-bottom-right-radius: 5px;
-        }
-
-        .thought-process {
-            font-size: 10px; color: #bbb; display: block; margin-bottom: 4px; font-style: italic;
-        }
-
-        /* =========================================
-           5. INPUT BAR (Pill Shape)
-           ========================================= */
-        .input-bar {
-            padding: 10px 15px; background: #000;
-            display: flex; align-items: center; gap: 12px;
-        }
+        .icon-btn { font-size: 24px; cursor: pointer; }
         
-        .icon-btn { font-size: 20px; color: var(--primary); cursor: pointer; }
-
         .input-pill {
             flex: 1; background: var(--input-bg);
-            border-radius: 20px; padding: 8px 15px;
+            border-radius: 25px; padding: 10px 18px;
             display: flex; align-items: center;
         }
         
         textarea {
-            flex: 1; background: transparent; border: none;
-            color: white; font-family: var(--font-main); font-size: 15px;
-            resize: none; height: 20px; max-height: 80px; outline: none;
-            padding: 0; margin-top: 2px;
+            width: 100%; background: transparent; border: none;
+            color: white; font-family: 'Inter', sans-serif; font-size: 16px;
+            resize: none; height: 24px; max-height: 120px; outline: none;
+            padding: 0;
         }
-
-        .send-text { 
-            font-weight: 600; font-size: 15px; 
-            color: #0084ff; /* Dynamic */
-            cursor: pointer; margin-left: 10px;
-        }
-
-        /* Loader */
-        .loader { position: absolute; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
-        .meta-logo { font-size: 40px; background: linear-gradient(45deg, #00c6ff, #0072ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .send-txt { font-weight: 600; font-size: 16px; margin-left: 10px; cursor: pointer; display: none; }
+        .typing { display: none; margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #777; font-style: italic; }
 
     </style>
-    
+
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
 </head>
 <body>
 
-<div class="app-frame">
-    
-    <div class="loader" id="sysLoader">
-        <i class="fa-brands fa-meta meta-logo"></i>
-    </div>
-
-    <div class="view active" id="viewSelect">
-        <div class="select-header">
-            <h1>Chat With</h1>
-            <p style="color:#666; font-size:13px; margin-top:5px;">Select your soulmate</p>
-        </div>
-
-        <div class="story-container">
-            <div class="story-circle" onclick="System.boot('khona')">
-                <div class="story-ring">
-                    <div class="story-img" style="background-image: url('https://cdn-icons-png.flaticon.com/512/616/616430.png')"></div>
+    <div class="view-section" id="screenSelect">
+        <div class="story-wrapper">
+            <h1 class="story-title">Soulmate OS</h1>
+            <p style="color:#666; font-size:14px; margin-top:-30px;">Tonton Friends Edition</p>
+            
+            <div class="story-row">
+                <div class="story-item" onclick="startChat('khona')">
+                    <div class="story-ring">
+                        <div class="story-img" style="background-image: url('https://i.pinimg.com/736x/82/38/53/8238531eb4313264eb789b71e1fc2224.jpg');"></div>
+                    </div>
+                    <span class="story-name">Khona</span>
                 </div>
-                <span class="story-name">Khona</span>
-            </div>
-
-            <div class="story-circle" onclick="System.boot('nihan')">
-                <div class="story-ring nihan-ring">
-                    <div class="story-img" style="background-image: url('https://cdn-icons-png.flaticon.com/512/616/616554.png')"></div>
+                <div class="story-item" onclick="startChat('nihan')">
+                    <div class="story-ring ring-blue">
+                        <div class="story-img" style="background-image: url('https://i.pinimg.com/736x/2c/80/d2/2c80d226a35022e37996c1647469a478.jpg');"></div>
+                    </div>
+                    <span class="story-name">Nihan</span>
                 </div>
-                <span class="story-name">Nihan</span>
             </div>
         </div>
     </div>
 
-    <div class="view" id="viewChat">
+    <div class="view-section hidden" id="screenChat">
         <div class="chat-header">
             <div class="header-left">
-                <i class="fa-solid fa-arrow-left back-btn" onclick="location.reload()"></i>
-                <div class="profile-pic" id="headerIcon"><div class="active-badge"></div></div>
-                <div class="header-info">
-                    <h3 id="headerName">Agent</h3>
-                    <p>Active now</p>
+                <i class="fa-solid fa-arrow-left back-icon" onclick="location.reload()"></i>
+                <div class="profile-bubble" id="headerIcon"><div class="active-dot"></div></div>
+                <div>
+                    <h3 id="headerName" style="font-size:17px; font-weight:600;">Agent</h3>
+                    <p style="font-size:12px; color:#888;">Active now</p>
                 </div>
             </div>
-            <div class="header-icons">
-                <i class="fa-solid fa-phone" id="callIcon"></i>
-                <i class="fa-solid fa-video" id="videoIcon"></i>
-                <i class="fa-solid fa-circle-info"></i>
+            <div class="header-actions">
+                <i class="fa-solid fa-phone theme-icon"></i>
+                <i class="fa-solid fa-video theme-icon"></i>
+                <i class="fa-solid fa-circle-info theme-icon"></i>
             </div>
         </div>
 
         <div class="chat-feed" id="feed"></div>
+        <div class="typing" id="typingIndicator">typing...</div>
 
-        <div class="input-bar">
-            <i class="fa-solid fa-circle-plus icon-btn" style="color:#0084ff" id="plusIcon"></i>
-            <i class="fa-solid fa-camera icon-btn" style="color:#0084ff" id="camIcon"></i>
-            <i class="fa-solid fa-image icon-btn" style="color:#0084ff" id="galleryIcon"></i>
-            <i class="fa-solid fa-microphone icon-btn" onclick="Utils.voiceInput()" style="color:#0084ff" id="micIcon"></i>
+        <div class="input-container">
+            <i class="fa-solid fa-circle-plus icon-btn theme-icon"></i>
+            <i class="fa-solid fa-camera icon-btn theme-icon"></i>
+            <i class="fa-solid fa-image icon-btn theme-icon"></i>
+            <i class="fa-solid fa-microphone icon-btn theme-icon"></i>
             
             <div class="input-pill">
                 <textarea id="userInput" placeholder="Message..." rows="1"></textarea>
-                <span class="send-text" id="sendBtn" onclick="Chat.send()">Send</span>
+                <span class="send-txt theme-icon" id="sendBtn">Send</span>
             </div>
             
-            <i class="fa-solid fa-thumbs-up icon-btn" style="color:#0084ff" id="likeIcon"></i>
+            <i class="fa-solid fa-thumbs-up icon-btn theme-icon" id="likeBtn"></i>
         </div>
     </div>
-
-</div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    // 🔴 API KEY
+    // ✅ VERIFIED API KEY
     const API_KEY = "AlzaSyCoxQEqblhAH4ZAmSHZljpJbqry7AdT6sY"; 
-    
-    const DB = {
-        agents: {
-            khona: {
-                name: "Khona",
-                // Instagram Gradient
-                grad: "linear-gradient(to right, #A855F7, #EC4899)", 
-                uiColor: "#EC4899",
-                icon: "https://cdn-icons-png.flaticon.com/512/616/616430.png",
-                prompt: `Role: User's WIFE. Name: Khona. Personality: Emotional, cute, uses emojis (😭, ❤️), speaks Banglish. Call user 'Nihan'.`,
-                first: "Nihan! Tumi eshecho? 🥺 I missed you! ❤️"
-            },
-            nihan: {
-                name: "Nihan",
-                // Messenger Blue Gradient
-                grad: "linear-gradient(to right, #00c6ff, #0072ff)", 
-                uiColor: "#0084ff",
-                icon: "https://cdn-icons-png.flaticon.com/512/616/616554.png",
-                prompt: `Role: User's HUSBAND. Name: Nihan. Personality: Cool, protective, uses 'Pagli', 'Babu', speaks Banglish.`,
-                first: "Ki re pagli? 😼 Eto deri keno? I was waiting. ❤️"
-            }
+
+    // ✅ TONTON FRIENDS STICKERS
+    const STICKERS = {
+        bella: "https://i.pinimg.com/736x/82/38/53/8238531eb4313264eb789b71e1fc2224.jpg", // Cute Calico Cat
+        yuta: "https://i.pinimg.com/736x/2c/80/d2/2c80d226a35022e37996c1647469a478.jpg"  // Cute Shiba Inu
+    };
+
+    const AGENTS = {
+        khona: {
+            name: "Khona",
+            color: "#ff3366", // Pink
+            grad: "linear-gradient(to right, #ff3366, #bc2a8d)",
+            icon: STICKERS.bella,
+            prompt: `You are Khona. Role: User's WIFE. Personality: Sensitive, cute, cries easily (😭), speaks Banglish. Call user 'Nihan'.`,
+            first: "Nihan! Tumi eshecho? 🥺 I missed you! ❤️"
+        },
+        nihan: {
+            name: "Nihan",
+            color: "#0084ff", // Blue
+            grad: "linear-gradient(to right, #00c6ff, #0072ff)",
+            icon: STICKERS.yuta,
+            prompt: `You are Nihan. Role: User's HUSBAND. Personality: Protective, cool, speaks Banglish. Call user 'Pagli'.`,
+            first: "Ki re pagli? 😼 Eto deri keno? I was waiting. ❤️"
         }
     };
 
-    let genAI, model, session;
     let currentAgent = null;
+    let chatSession;
+    let genAI;
 
-    window.System = {
-        init: async () => {
-            setTimeout(() => document.getElementById('sysLoader').style.opacity = '0', 1000);
-            setTimeout(() => document.getElementById('sysLoader').style.display = 'none', 1500);
-        },
+    // --- START CHAT ---
+    window.startChat = async function(key) {
+        currentAgent = AGENTS[key];
+        
+        // Update Icons & Text Color
+        const themeIcons = document.querySelectorAll('.theme-icon');
+        themeIcons.forEach(icon => {
+            icon.style.color = currentAgent.color;
+        });
 
-        boot: async (agentKey) => {
-            currentAgent = DB.agents[agentKey];
+        document.getElementById('headerName').innerText = currentAgent.name;
+        document.getElementById('headerIcon').style.backgroundImage = `url('${currentAgent.icon}')`;
+
+        document.getElementById('screenSelect').classList.add('hidden');
+        document.getElementById('screenChat').classList.remove('hidden');
+
+        // Gemini Connection
+        try {
+            genAI = new GoogleGenerativeAI(API_KEY);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             
-            // Set Theme Colors
-            document.documentElement.style.setProperty('--primary-grad', currentAgent.grad);
-            
-            // Update Icons Colors to match theme
-            const color = currentAgent.uiColor;
-            ['callIcon','videoIcon','plusIcon','camIcon','galleryIcon','micIcon','likeIcon'].forEach(id => {
-                document.getElementById(id).style.color = color;
+            chatSession = model.startChat({
+                history: [
+                    { role: "user", parts: [{ text: "System Instruction: " + currentAgent.prompt }] },
+                    { role: "model", parts: [{ text: "Ok." }] }
+                ]
             });
-            document.getElementById('sendBtn').style.color = color;
 
-            document.getElementById('headerName').innerText = currentAgent.name;
-            document.getElementById('headerIcon').style.backgroundImage = `url('${currentAgent.icon}')`;
+            setTimeout(() => addMsg(currentAgent.first, 'ai'), 600);
 
-            // Transition
-            document.getElementById('viewSelect').classList.remove('active');
-            document.getElementById('viewChat').classList.add('active');
-
-            try {
-                genAI = new GoogleGenerativeAI(API_KEY);
-                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                session = model.startChat({
-                    history: [
-                        { role: "user", parts: [{ text: "System Instruction: " + currentAgent.prompt }] },
-                        { role: "model", parts: [{ text: "System active." }] }
-                    ]
-                });
-                setTimeout(() => Chat.addMsg(currentAgent.first, 'ai', "Seen just now"), 500);
-            } catch (e) { console.error(e); }
+        } catch (error) {
+            console.error(error);
+            alert("API Connection Failed. Please reload.");
         }
     };
 
-    window.Chat = {
-        send: async () => {
-            const input = document.getElementById('userInput');
-            const text = input.value.trim();
-            if (!text) return;
+    // --- SEND LOGIC ---
+    async function handleSend() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        if(!text) return;
 
-            Chat.addMsg(text, 'user');
-            input.value = '';
-            Utils.autoResize(input);
+        addMsg(text, 'user');
+        input.value = '';
+        toggleSendBtn();
+        
+        const typing = document.getElementById('typingIndicator');
+        typing.style.display = 'block';
+        scrollToBottom();
 
-            const typingId = Chat.showTyping();
-
-            try {
-                const result = await session.sendMessage(text);
-                const response = result.response.text();
-                Chat.removeTyping(typingId);
-                
-                let thought = "";
-                if(text.includes('love')) thought = "typing...";
-                
-                Chat.addMsg(response, 'ai', thought);
-            } catch (error) {
-                Chat.removeTyping(typingId);
-                Chat.addMsg("Connection error 🥺", 'ai');
-            }
-        },
-
-        addMsg: (text, sender, thought = null) => {
-            const feed = document.getElementById('feed');
-            const row = document.createElement('div');
-            row.className = `msg-row ${sender}`;
+        try {
+            const result = await chatSession.sendMessage(text);
+            const response = result.response.text();
             
-            let avatarHTML = '';
-            if(sender === 'ai') {
-                avatarHTML = `<div class="avatar-tiny" style="background-image: url('${currentAgent.icon}')"></div>`;
-            }
+            typing.style.display = 'none';
+            addMsg(response, 'ai');
 
-            let fmt = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-            let thoughtHTML = thought ? `<span class="thought-process">${thought}</span>` : '';
-
-            row.innerHTML = `
-                ${avatarHTML}
-                <div class="bubble">
-                    ${thoughtHTML}
-                    ${fmt}
-                </div>
-            `;
-            
-            feed.appendChild(row);
-            feed.scrollTop = feed.scrollHeight;
-        },
-
-        showTyping: () => {
-            const feed = document.getElementById('feed');
-            const id = 'typing-' + Date.now();
-            const row = document.createElement('div');
-            row.className = 'msg-row ai';
-            row.id = id;
-            row.innerHTML = `
-                <div class="avatar-tiny" style="background-image: url('${currentAgent.icon}')"></div>
-                <div class="bubble" style="color:#aaa; font-style:italic;">
-                    <i class="fa-solid fa-ellipsis fa-fade"></i>
-                </div>
-            `;
-            feed.appendChild(row);
-            feed.scrollTop = feed.scrollHeight;
-            return id;
-        },
-
-        removeTyping: (id) => { const el = document.getElementById(id); if(el) el.remove(); }
-    };
-
-    window.Utils = {
-        voiceInput: () => {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'bn-BD';
-            recognition.start();
-            document.getElementById('micIcon').style.opacity = '0.5';
-            recognition.onresult = (e) => {
-                document.getElementById('userInput').value = e.results[0][0].transcript;
-                document.getElementById('micIcon').style.opacity = '1';
-                Utils.autoResize(document.getElementById('userInput'));
-            };
-        },
-        autoResize: (el) => {
-            el.style.height = '20px';
-            el.style.height = el.scrollHeight + 'px';
+        } catch (error) {
+            typing.style.display = 'none';
+            addMsg("Connection error... 🥺", 'ai');
         }
-    };
+    }
 
-    System.init();
-    
-    // Listeners
-    document.getElementById('userInput').addEventListener('input', function() { 
-        Utils.autoResize(this);
-        // Toggle Like button to Send button logic
-        const btn = document.getElementById('sendBtn');
-        const like = document.getElementById('likeIcon');
-        if(this.value.trim() !== "") {
-            btn.style.display = "block"; like.style.display = "none";
+    function addMsg(text, sender) {
+        const feed = document.getElementById('feed');
+        const row = document.createElement('div');
+        row.className = `msg-row ${sender}`;
+        
+        let avatarHTML = '';
+        let bubbleStyle = '';
+
+        if(sender === 'ai') {
+            avatarHTML = `<div class="tiny-avatar" style="background-image: url('${currentAgent.icon}')"></div>`;
         } else {
-            btn.style.display = "none"; like.style.display = "block";
+            bubbleStyle = `background: ${currentAgent.grad}; border:none;`;
+        }
+
+        let fmt = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+
+        row.innerHTML = `
+            ${avatarHTML}
+            <div class="bubble" style="${bubbleStyle}">
+                ${fmt}
+            </div>
+        `;
+
+        feed.appendChild(row);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        const feed = document.getElementById('feed');
+        feed.scrollTop = feed.scrollHeight;
+    }
+
+    // --- UTILS ---
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const likeBtn = document.getElementById('likeBtn');
+
+    function toggleSendBtn() {
+        if(userInput.value.trim() !== "") {
+            sendBtn.style.display = 'block';
+            likeBtn.style.display = 'none';
+        } else {
+            sendBtn.style.display = 'none';
+            likeBtn.style.display = 'block';
+        }
+        userInput.style.height = '24px';
+        userInput.style.height = userInput.scrollHeight + 'px';
+    }
+
+    userInput.addEventListener('input', toggleSendBtn);
+    sendBtn.addEventListener('click', handleSend);
+    userInput.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
         }
     });
-
-    // Default state: Hide Send text, show Like icon
-    document.getElementById('sendBtn').style.display = "none";
 
 </script>
 </body>
